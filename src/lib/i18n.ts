@@ -85,7 +85,7 @@ export const dictionaries = {
     },
     footer: { tagline: "Software, automatización e inteligencia artificial para empresas.", made: "Estudio global · Diseñado y construido con precisión" },
     showcase: {
-      eyebrow: "La plataforma", title: "Software que se siente premium",
+      eyebrow: "La plataforma", title: "Construimos software que se siente premium",
       lead: "Interfaces limpias, datos en tiempo real y analítica accionable. Construimos productos que tus usuarios disfrutan usar y que tu equipo puede escalar.",
       b1: { t: "Rápido", d: "experiencias instantáneas y optimizadas." },
       b2: { t: "Seguro", d: "buenas prácticas y datos protegidos por defecto." },
@@ -186,7 +186,7 @@ export const dictionaries = {
     },
     footer: { tagline: "Software, automation and artificial intelligence for businesses.", made: "Global studio · Designed and built with precision" },
     showcase: {
-      eyebrow: "The platform", title: "Software that feels premium",
+      eyebrow: "The platform", title: "We build software that feels premium",
       lead: "Clean interfaces, real-time data and actionable analytics. We build products your users love to use, and your team can scale.",
       b1: { t: "Fast", d: "instant, optimized experiences." },
       b2: { t: "Secure", d: "best practices and protected data by default." },
