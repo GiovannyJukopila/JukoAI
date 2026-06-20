@@ -7,7 +7,7 @@ export function WhatsAppFab() {
       target="_blank"
       rel="noopener noreferrer"
       className="wa-fab"
-      aria-label="Contactar por WhatsApp (+356 79529100)"
+      aria-label="Contactar por WhatsApp (+57 3005120188)"
     >
       <span className="wa-fab__ring" aria-hidden="true" />
       <svg viewBox="0 0 32 32" width="30" height="30" fill="currentColor" aria-hidden="true">

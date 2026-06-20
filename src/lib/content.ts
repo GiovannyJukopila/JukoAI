@@ -8,7 +8,7 @@ type LArr = Record<Locale, string[]>;
 
 export const SOCIAL = {
   email: "jukopila.giovanny15@gmail.com",
-  whatsapp: "https://wa.me/35679529100",
+  whatsapp: "https://wa.me/573005120188",
   linkedin: "https://www.linkedin.com/in/giovanny-zdenco-jukopila-rueda-a86704210/",
   github: "https://github.com/GiovannyJukopila",
   location: "Malta",
