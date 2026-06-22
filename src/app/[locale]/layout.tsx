@@ -25,10 +25,9 @@ export const metadata: Metadata = {
     title: "Juko AI · Software & Inteligencia Artificial",
     description: "Construimos software, automatización y agentes con IA para empresas. Web · Móvil · Cloud.",
     siteName: "Juko AI",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Juko AI" }],
   },
-  icons: {
-    icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23190482'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='56' font-weight='700' fill='%23C2D9FF' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E",
-  },
+  // favicon / app icons resueltos por convención de archivo: src/app/icon.png y src/app/apple-icon.png
 };
 
 export default async function LocaleLayout({

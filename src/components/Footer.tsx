@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LogoMark } from "./icons";
 import { getDict, type Locale } from "@/lib/i18n";
 import { SOCIAL } from "@/lib/content";
 
@@ -10,7 +11,10 @@ export function Footer({ locale }: { locale: Locale }) {
     <footer className="footer">
       <div className="footer__top">
         <div className="footer__brand">
-          <span className="nav__logo-text" style={{ fontSize: "1.4rem" }}>Juko<b>AI</b></span>
+          <span className="footer__brand-mark">
+            <LogoMark size={26} />
+            <span className="nav__logo-text" style={{ fontSize: "1.4rem" }}>Juko<b>AI</b></span>
+          </span>
           <p>{dict.footer.tagline}</p>
         </div>
         <div className="footer__links">

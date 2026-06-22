@@ -45,7 +45,7 @@ export function Nav({ locale }: { locale: Locale }) {
     <>
       <header className={`nav${scrolled ? " is-scrolled" : ""}`}>
         <Link href={home} className="nav__logo" aria-label="Juko AI">
-          <LogoMark />
+          <LogoMark priority />
           <span className="nav__logo-text">Juko<b>AI</b></span>
         </Link>
 

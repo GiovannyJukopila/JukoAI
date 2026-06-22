@@ -1,4 +1,8 @@
+import Image from "next/image";
 import type { ServiceIcon } from "@/lib/content";
+
+// jukoLogo.png intrinsic ratio (3057 × 5093 ≈ 0.6 w/h)
+const LOGO_RATIO = 0.6;
 
 const base = {
   width: 26,
@@ -52,17 +56,15 @@ export function Check({ size = 16 }: { size?: number }) {
   );
 }
 
-export function LogoMark({ size = 28 }: { size?: number }) {
+export function LogoMark({ size = 28, priority = false }: { size?: number; priority?: boolean }) {
   return (
-    <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true">
-      <defs>
-        <linearGradient id="jukoLg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#8E8FFA" />
-          <stop offset="1" stopColor="#7752FE" />
-        </linearGradient>
-      </defs>
-      <rect x="2" y="2" width="28" height="28" rx="9" fill="none" stroke="url(#jukoLg)" strokeWidth="2" />
-      <path d="M21 9v9.2c0 2.7-1.9 4.6-4.7 4.6-2.5 0-4.3-1.5-4.7-3.8" fill="none" stroke="url(#jukoLg)" strokeWidth="2.4" strokeLinecap="round" />
-    </svg>
+    <Image
+      src="/jukoLogo.png"
+      alt="Juko AI"
+      width={Math.round(size * LOGO_RATIO)}
+      height={size}
+      priority={priority}
+      style={{ width: "auto", height: size, display: "block" }}
+    />
   );
 }
