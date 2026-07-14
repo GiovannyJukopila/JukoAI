@@ -39,8 +39,8 @@ El panel se reorganizó (ver `docs/AUDIT_FASE0.md` y el plan de refactor). Secci
 ### Social Studio — para activar la publicación real
 
 1. Genera `SOCIAL_TOKEN_KEY` (cifra los tokens en BD): `openssl rand -base64 32`.
-2. Crea las apps y rellena `LINKEDIN_CLIENT_ID/SECRET` e `INSTAGRAM_APP_ID/SECRET` (pasos en `.env.example`; análisis completo de cada plataforma en `docs/SOCIAL_APIS.md`).
-3. Conecta las cuentas desde `/prospect/social` → Cuentas. YouTube/TikTok requieren audit de plataforma; X es de pago (pendiente de decisión).
+2. Crea las apps y rellena las credenciales (pasos detallados en `.env.example`): `LINKEDIN_CLIENT_ID/SECRET`, `INSTAGRAM_APP_ID/SECRET`, `GOOGLE_OAUTH_CLIENT_ID/SECRET` (YouTube), `TIKTOK_CLIENT_KEY/SECRET`.
+3. Conecta las cuentas desde `/prospect/social` → Cuentas. Modo actual sin audits: **YouTube sube los videos como privados** (se publican desde YouTube Studio) y **TikTok los deja como borrador en la bandeja de la app**; para publicación pública directa, pedir los audits (guía en `docs/SOCIAL_APIS.md`). X es de pago 💸 (pendiente de decisión).
 
 ---
 
