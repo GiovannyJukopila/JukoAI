@@ -1,7 +1,8 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiGet, LEAD_STATUS_OPTIONS, type LeadRow, type Category } from "../_lib";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { apiGet, LEAD_STATUS_OPTIONS, type LeadRow, type Category, type CoverageRow } from "../_lib";
 import { StatCard, ScoreBadge, Icons } from "../_components/viz";
 import { Analytics, type AnalyticsScope } from "../_components/Analytics";
 import { useLang, type Messages } from "../_i18n";
@@ -13,10 +14,12 @@ type LeadsResponse = {
 };
 /** Full geographic catalog (every planned zone, not just those with leads). */
 type CatalogZone = { id: number; country: string; cityId: number; city: string | null; name: string };
+type SortKey = "score" | "name" | "reviews" | "rating";
 
 export default function LeadsPage() {
   const router = useRouter();
   const { t } = useLang();
+  const reduceMotion = useReducedMotion();
   const [data, setData] = useState<LeadsResponse | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [zonesCatalog, setZonesCatalog] = useState<CatalogZone[]>([]);
@@ -32,6 +35,7 @@ export default function LeadsPage() {
   const [onlyUnaudited, setOnlyUnaudited] = useState(false);
   const [search, setSearch] = useState("");
   const [q, setQ] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("score");
 
   useEffect(() => {
     const id = setTimeout(() => setQ(search.trim()), 300);
@@ -92,6 +96,32 @@ export default function LeadsPage() {
     const hot = leads.filter((l) => (l.opportunityScore ?? -1) >= 70).length;
     return { total: leads.length, audited: audited.length, avg, hot, unaudited: leads.length - audited.length };
   }, [data]);
+
+  // Client-side ordering — the API always returns score-desc; re-sorting locally
+  // keeps the interaction instant (no refetch, animated reflow).
+  const rows = useMemo(() => {
+    const leads = [...(data?.leads ?? [])];
+    const cmp: Record<SortKey, (a: LeadRow, b: LeadRow) => number> = {
+      score: (a, b) => (b.opportunityScore ?? -1) - (a.opportunityScore ?? -1) || a.name.localeCompare(b.name),
+      name: (a, b) => a.name.localeCompare(b.name),
+      reviews: (a, b) => (b.reviewsCount ?? -1) - (a.reviewsCount ?? -1),
+      rating: (a, b) => (b.rating ?? -1) - (a.rating ?? -1),
+    };
+    return leads.sort(cmp[sortKey]);
+  }, [data, sortKey]);
+
+  const hasActiveFilters = !!(country || cityId || zoneId || category || minScore || leadStatus || onlyUnaudited || search);
+  const clearFilters = () => {
+    setCountry(""); setCityId(""); setZoneId(""); setCategory("");
+    setMinScore(""); setLeadStatus(""); setOnlyUnaudited(false); setSearch("");
+  };
+
+  // A zone card in the coverage panel drives the table filters (drill-down).
+  const pickZone = useCallback((z: CatalogZone) => {
+    setCountry(z.country);
+    setCityId(String(z.cityId));
+    setZoneId((prev) => (prev === String(z.id) ? "" : String(z.id)));
+  }, []);
 
   return (
     <div className="space-y-5">
@@ -157,8 +187,16 @@ export default function LeadsPage() {
             {LEAD_STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value} className="bg-[#111]">{t.leadStatus[s.value]}</option>)}
           </select>
         </Filter>
-        {(country || cityId || zoneId || category || minScore || leadStatus || onlyUnaudited || search) && (
-          <button onClick={() => { setCountry(""); setCityId(""); setZoneId(""); setCategory(""); setMinScore(""); setLeadStatus(""); setOnlyUnaudited(false); setSearch(""); }}
+        <Filter label={t.leads.sort}>
+          <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="filter-input">
+            <option value="score" className="bg-[#111]">{t.leads.sortScore}</option>
+            <option value="name" className="bg-[#111]">{t.leads.sortName}</option>
+            <option value="reviews" className="bg-[#111]">{t.leads.sortReviews}</option>
+            <option value="rating" className="bg-[#111]">{t.leads.sortRating}</option>
+          </select>
+        </Filter>
+        {hasActiveFilters && (
+          <button onClick={clearFilters}
             className="ml-auto cursor-pointer rounded-lg px-3 py-1.5 text-xs text-[var(--ink-soft)] hover:text-white">{t.leads.clear}</button>
         )}
       </div>
@@ -184,12 +222,24 @@ export default function LeadsPage() {
           {t.leads.qHot}
         </button>
         <span className="ml-auto text-xs tabular-nums text-[var(--ink-mute)]" aria-live="polite">
-          {loading ? t.common.loading : t.leads.results(data?.leads.length ?? 0)}
+          {loading ? t.common.loading : t.leads.results(rows.length)}
         </span>
       </div>
 
+      {/* Zone coverage rollup (merged from the old Cobertura tab) */}
+      <ZoneCoverage
+        country={country}
+        cityId={cityId ? Number(cityId) : null}
+        activeZoneId={zoneId ? Number(zoneId) : null}
+        zonesCatalog={zonesCatalog}
+        categoriesTotal={categories.length}
+        onPickZone={pickZone}
+        t={t}
+        reduceMotion={!!reduceMotion}
+      />
+
       {/* Table — previous rows stay visible (dimmed) while a new filter loads */}
-      <div className={`overflow-hidden rounded-xl border border-white/10 transition-opacity duration-200 ${loading && data ? "opacity-60" : "opacity-100"}`}>
+      <div className={`overflow-x-auto rounded-xl border border-white/10 transition-opacity duration-200 ${loading && data ? "opacity-60" : "opacity-100"}`}>
         <table className="w-full text-sm">
           <thead className="bg-white/[0.03] text-left text-xs uppercase tracking-wide text-[var(--ink-mute)]">
             <tr>
@@ -204,11 +254,29 @@ export default function LeadsPage() {
           </thead>
           <tbody className="divide-y divide-white/5">
             {!data && loading && <tr><td colSpan={7} className="px-3 py-8 text-center text-[var(--ink-mute)]">{t.common.loading}</td></tr>}
-            {data?.leads.length === 0 && !loading && (
-              <tr><td colSpan={7} className="px-3 py-8 text-center text-[var(--ink-mute)]">{t.leads.empty}</td></tr>
+            {rows.length === 0 && data && !loading && (
+              <tr>
+                <td colSpan={7} className="px-3 py-10 text-center">
+                  <p className="text-sm text-[var(--ink-mute)]">{t.leads.empty}</p>
+                  {hasActiveFilters && (
+                    <button onClick={clearFilters}
+                      className="mt-3 cursor-pointer rounded-lg border border-[var(--peri)]/40 bg-[var(--peri)]/10 px-3 py-1.5 text-xs font-medium text-[var(--peri)] hover:bg-[var(--peri)]/20">
+                      {t.leads.emptyCta}
+                    </button>
+                  )}
+                </td>
+              </tr>
             )}
-            {data?.leads.map((l) => (
-              <tr key={l.id} onClick={() => router.push(`/prospect/leads/${l.id}`)} className="group cursor-pointer transition-colors hover:bg-white/[0.04]">
+            {rows.map((l, i) => (
+              <motion.tr
+                key={l.id}
+                layout={!reduceMotion}
+                initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, ease: "easeOut", delay: Math.min(i * 0.012, 0.25) }}
+                onClick={() => router.push(`/prospect/leads/${l.id}`)}
+                className="group cursor-pointer transition-colors hover:bg-white/[0.04]"
+              >
                 <td className="px-3 py-2.5"><ScoreBadge value={l.opportunityScore} /></td>
                 <td className="px-3 py-2.5">
                   <div className="font-medium text-white group-hover:text-[var(--peri)]">{l.name}</div>
@@ -225,7 +293,7 @@ export default function LeadsPage() {
                     {t.leadStatus[l.leadStatus] ?? l.leadStatus}
                   </span>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
@@ -249,6 +317,134 @@ function IssueChips({ issues, auditStatus, t }: { issues?: string[] | null; audi
         <span key={i} className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-[var(--ink-soft)]">{t.issues[i] ?? i}</span>
       ))}
       {issues.length > 3 && <span className="text-[10px] text-[var(--ink-mute)]">+{issues.length - 3}</span>}
+    </div>
+  );
+}
+
+/* ── Zone coverage panel (merged from the deprecated Cobertura tab) ──────────
+ * Read-only rollup per zone: how many categories were evaluated and how many
+ * businesses are audited. Clicking a zone drives the table's geo filters. */
+
+type ZoneAgg = { evaluated: number; overdue: number; bizTotal: number; bizAudited: number };
+
+function ZoneCoverage({
+  country, cityId, activeZoneId, zonesCatalog, categoriesTotal, onPickZone, t, reduceMotion,
+}: {
+  country: string;
+  cityId: number | null;
+  activeZoneId: number | null;
+  zonesCatalog: CatalogZone[];
+  categoriesTotal: number;
+  onPickZone: (z: CatalogZone) => void;
+  t: Messages;
+  reduceMotion: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [cov, setCov] = useState<CoverageRow[] | null>(null);
+
+  // Lazy-load the coverage ledger the first time the panel opens.
+  useEffect(() => {
+    if (!open || cov) return;
+    apiGet<{ coverage: CoverageRow[] }>("/api/prospect/coverage").then((d) => setCov(d.coverage)).catch(() => setCov([]));
+  }, [open, cov]);
+
+  const aggByZone = useMemo(() => {
+    const m = new Map<number, ZoneAgg>();
+    for (const r of cov ?? []) {
+      const agg = m.get(r.zoneId) ?? { evaluated: 0, overdue: 0, bizTotal: 0, bizAudited: 0 };
+      agg.evaluated += 1;
+      if (r.needsRefresh) agg.overdue += 1;
+      agg.bizTotal += r.bizTotal;
+      agg.bizAudited += r.bizAudited;
+      m.set(r.zoneId, agg);
+    }
+    return m;
+  }, [cov]);
+
+  const zones = useMemo(
+    () => zonesCatalog
+      .filter((z) => z.country === country && (!cityId || z.cityId === cityId))
+      .sort((a, b) => (aggByZone.get(b.id)?.bizTotal ?? 0) - (aggByZone.get(a.id)?.bizTotal ?? 0) || a.name.localeCompare(b.name)),
+    [zonesCatalog, country, cityId, aggByZone],
+  );
+
+  if (!country) return null;
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-white/[0.03]"
+      >
+        <span className="text-xs font-medium uppercase tracking-wide text-[var(--ink-mute)]">{t.leads.covTitle}</span>
+        <span className="text-xs text-[var(--ink-soft)]">· {country}{cityId ? "" : ""}</span>
+        <span className="ml-auto text-xs text-[var(--peri)]">{open ? t.leads.covHide : t.leads.covShow}</span>
+        <span className={`text-[var(--ink-mute)] transition-transform duration-200 ${open ? "rotate-90" : ""}`}>›</span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="cov-body"
+            initial={reduceMotion ? false : { height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            <div className="border-t border-white/5 p-3">
+              {!cov && <p className="py-3 text-center text-xs text-[var(--ink-mute)]">{t.common.loading}</p>}
+              {cov && zones.length === 0 && <p className="py-3 text-center text-xs text-[var(--ink-mute)]">{t.leads.covEmpty}</p>}
+              {cov && zones.length > 0 && (
+                <>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {zones.map((z, i) => {
+                      const a = aggByZone.get(z.id);
+                      const evaluated = a?.evaluated ?? 0;
+                      const bizTotal = a?.bizTotal ?? 0;
+                      const bizAudited = a?.bizAudited ?? 0;
+                      const pct = bizTotal ? Math.round((bizAudited / bizTotal) * 100) : 0;
+                      const active = activeZoneId === z.id;
+                      return (
+                        <motion.button
+                          key={z.id}
+                          layout={!reduceMotion}
+                          initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2, ease: "easeOut", delay: Math.min(i * 0.02, 0.3) }}
+                          onClick={() => onPickZone(z)}
+                          aria-pressed={active}
+                          className={`cursor-pointer rounded-xl border p-3 text-left transition-colors ${
+                            active ? "border-[var(--peri)]/50 bg-[var(--peri)]/[0.08]" : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                          }`}
+                        >
+                          <div className="flex items-baseline justify-between gap-2">
+                            <span className="truncate text-sm font-medium text-white">{z.name}</span>
+                            {a && a.overdue > 0 && (
+                              <span className="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-300">↻ {a.overdue}</span>
+                            )}
+                          </div>
+                          {z.city && z.city !== z.name && <div className="truncate text-[11px] text-[var(--ink-mute)]">{z.city}</div>}
+                          <div className="mt-2 flex items-center justify-between text-[11px]">
+                            <span className="text-[var(--ink-soft)]">{t.leads.covEval(evaluated, categoriesTotal)}</span>
+                            <span className={bizTotal && bizAudited >= bizTotal ? "text-emerald-300" : "text-[var(--ink-soft)]"}>
+                              {t.leads.covAudit(bizAudited, bizTotal)}
+                            </span>
+                          </div>
+                          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                            <div className="h-full rounded-full bg-emerald-400 transition-[width] duration-500" style={{ width: `${pct}%` }} />
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-2 text-[11px] text-[var(--ink-mute)]">{t.leads.covHint}</p>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
