@@ -201,7 +201,15 @@ function AccountsTab({ accounts, onDisconnect, t }: { accounts: Account[] | null
                 <PlatformLogo p={p} size={20} />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-white">{BRAND[p].label}</div>
+                <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                  {BRAND[p].label}
+                  {kind === "paid" && (
+                    <span title={t.social.paidHint}
+                      className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-300">
+                      {t.social.paidBadge}
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5 text-xs">
                   <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-emerald-400" : acc?.status === "error" ? "bg-rose-400" : "bg-white/25"}`} />
                   <span className="text-[var(--ink-mute)]">
@@ -235,8 +243,11 @@ function AccountsTab({ accounts, onDisconnect, t }: { accounts: Account[] | null
                   {t.social.connect}
                 </a>
               ) : (
-                <div className="rounded-lg border border-dashed border-white/15 px-3 py-2 text-center text-[11px] text-[var(--ink-mute)]">
+                <div className={`rounded-lg border border-dashed px-3 py-2 text-center text-[11px] ${
+                  kind === "paid" ? "border-amber-500/30 bg-amber-500/[0.04] text-amber-300/80" : "border-white/15 text-[var(--ink-mute)]"
+                }`}>
                   {kind === "audit" ? t.social.needsAudit : t.social.pendingPaid}
+                  {kind === "paid" && <div className="mt-0.5 text-[10px] text-[var(--ink-mute)]">{t.social.paidHint}</div>}
                 </div>
               )}
             </div>
@@ -305,6 +316,7 @@ function ComposerTab({ connected, t, onSaved }: { connected: Set<string>; t: Mes
                 >
                   <span style={{ color: active ? BRAND[p].color : undefined }}><PlatformLogo p={p} size={13} /></span>
                   {BRAND[p].label}
+                  {INTEGRATION[p] === "paid" && <span title={t.social.paidHint} className="text-[10px] text-amber-300">💸</span>}
                   {!connected.has(p) && <span className="text-[9px] text-[var(--ink-mute)]">({t.social.stBorrador.toLowerCase()})</span>}
                 </button>
               );

@@ -6,6 +6,7 @@ import { apiGet, LEAD_STATUS_OPTIONS, type LeadRow, type Category, type Coverage
 import { StatCard, ScoreBadge, Icons } from "../_components/viz";
 import { Analytics, type AnalyticsScope } from "../_components/Analytics";
 import { useLang, type Messages } from "../_i18n";
+import { ENABLE_BUSINESS_AUDIT } from "@/config/features";
 
 type CityFacet = { id: number; name: string; country: string };
 type LeadsResponse = {
@@ -393,6 +394,11 @@ function ZoneCoverage({
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
             <div className="border-t border-white/5 p-3">
+              {!ENABLE_BUSINESS_AUDIT && (
+                <p className="mb-3 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2 text-[11px] leading-relaxed text-amber-300/90">
+                  {t.leads.covPaidNote}
+                </p>
+              )}
               {!cov && <p className="py-3 text-center text-xs text-[var(--ink-mute)]">{t.common.loading}</p>}
               {cov && zones.length === 0 && <p className="py-3 text-center text-xs text-[var(--ink-mute)]">{t.leads.covEmpty}</p>}
               {cov && zones.length > 0 && (
