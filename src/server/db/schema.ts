@@ -759,6 +759,48 @@ export const radarItems = pgTable(
   (t) => [index("radar_items_run_idx").on(t.runId)],
 );
 
+/* ───────────────────────── Tareas — Kanban (Fase 6 del refactor) ──────────
+ * Control de tareas de los 2 usuarios. Columnas configurables como texto;
+ * `sortOrder` es el índice dentro de la columna (se reescribe al soltar). */
+
+export const TASK_COLUMNS = ["backlog", "en_progreso", "en_revision", "hecho"] as const;
+export type TaskColumn = (typeof TASK_COLUMNS)[number];
+export const TASK_PRIORITIES = ["baja", "media", "alta", "urgente"] as const;
+export type TaskPriority = (typeof TASK_PRIORITIES)[number];
+
+export const tasks = pgTable(
+  "tasks",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    assignedTo: text("assigned_to"), // username
+    createdBy: text("created_by").notNull(),
+    column: text("column").notNull().default("backlog"), // TaskColumn
+    sortOrder: integer("sort_order").notNull().default(0),
+    priority: text("priority").notNull().default("media"), // TaskPriority
+    dueDate: timestamp("due_date", { withTimezone: true }),
+    labels: jsonb("labels").$type<string[]>(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("tasks_column_idx").on(t.column, t.sortOrder)],
+);
+
+export const taskComments = pgTable(
+  "task_comments",
+  {
+    id: serial("id").primaryKey(),
+    taskId: integer("task_id")
+      .notNull()
+      .references(() => tasks.id, { onDelete: "cascade" }),
+    author: text("author").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("task_comments_task_idx").on(t.taskId)],
+);
+
 /* ───────────────────────── relations ───────────────────────── */
 
 export const citiesRelations = relations(cities, ({ many }) => ({

@@ -42,16 +42,23 @@ const NavIcon = {
       <circle cx="12" cy="12" r="1" fill="currentColor" /><path d="m12 12 7-7" />
     </svg>
   ),
+  tareas: (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="6" height="14" rx="1.5" /><rect x="11" y="5" width="6" height="9" rx="1.5" />
+      <path d="M19 5h2v14h-2" />
+    </svg>
+  ),
 };
 
-type Section = "leads" | "coverage" | "operations" | "intel" | "social" | "radar";
-// Sidebar order (plan Fase 2.5): Negocios → Social Studio → Radar IA → [Tareas →
-// Goals llegan en fases posteriores]. Operaciones y Content Intel quedan detrás
+type Section = "leads" | "coverage" | "operations" | "intel" | "social" | "radar" | "tareas";
+// Sidebar order (plan Fase 2.5): Negocios → Social Studio → Radar IA → Tareas →
+// [Goals llega en la Fase 7]. Operaciones y Content Intel quedan detrás
 // de flags (deprecadas, código intacto).
 const NAV: { key: Section; href: string }[] = [
   { key: "leads", href: "/prospect/leads" },
   { key: "social", href: "/prospect/social" },
   { key: "radar", href: "/prospect/radar" },
+  { key: "tareas", href: "/prospect/tareas" },
   ...(ENABLE_OPERATIONS ? [{ key: "operations", href: "/prospect/operations" } as const] : []),
   ...(ENABLE_CONTENT_INTEL ? [{ key: "intel", href: "/prospect/intel" } as const] : []),
 ];

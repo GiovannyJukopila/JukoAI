@@ -65,13 +65,38 @@ CREATE TABLE IF NOT EXISTS radar_items (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS radar_items_run_idx ON radar_items (run_id);
+
+-- Fase 6: Kanban de tareas.
+CREATE TABLE IF NOT EXISTS tasks (
+  id serial PRIMARY KEY,
+  title text NOT NULL,
+  description text,
+  assigned_to text,
+  created_by text NOT NULL,
+  "column" text NOT NULL DEFAULT 'backlog',
+  sort_order integer NOT NULL DEFAULT 0,
+  priority text NOT NULL DEFAULT 'media',
+  due_date timestamptz,
+  labels jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS tasks_column_idx ON tasks ("column", sort_order);
+CREATE TABLE IF NOT EXISTS task_comments (
+  id serial PRIMARY KEY,
+  task_id integer NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  author text NOT NULL,
+  body text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS task_comments_task_idx ON task_comments (task_id);
 `;
 
 async function main() {
   const client = await pool.connect();
   try {
     await client.query(DDL);
-    console.log("✅ app-migrate: notifications + social studio listo.");
+    console.log("✅ app-migrate: notifications + social + radar + tasks listo.");
   } finally {
     client.release();
     await pool.end();
