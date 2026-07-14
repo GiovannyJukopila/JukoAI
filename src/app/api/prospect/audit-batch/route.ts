@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { auditZoneCategoryBatch } from "@/server/services/audit/batch";
-import { ok, badRequest, handleError } from "@/server/lib/api";
+import { ok, badRequest, handleError, featureDisabled } from "@/server/lib/api";
+import { ENABLE_BUSINESS_AUDIT } from "@/config/features";
 
 export const dynamic = "force-dynamic";
 // A small batch of PageSpeed audits can take a minute or two.
@@ -12,6 +13,7 @@ export const maxDuration = 300;
  * The client calls this repeatedly until `remaining` is 0, driving a progress bar.
  */
 export async function POST(req: NextRequest) {
+  if (!ENABLE_BUSINESS_AUDIT) return featureDisabled("ENABLE_BUSINESS_AUDIT");
   try {
     const body = await req.json().catch(() => null);
     const zoneId = Number(body?.zoneId);

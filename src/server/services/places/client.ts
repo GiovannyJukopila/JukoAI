@@ -10,6 +10,7 @@
  * Docs: https://developers.google.com/maps/documentation/places/web-service/text-search
  */
 import { env, requireKey } from "@/server/config/env";
+import { ENABLE_BUSINESS_AUDIT } from "@/config/features";
 import { fetchJson, RateLimiter } from "@/server/lib/http";
 import { ExternalApiError, RateLimitError } from "@/server/lib/errors";
 
@@ -69,6 +70,11 @@ export async function searchTextPage(
   textQuery: string,
   opts: SearchTextOptions = {},
 ): Promise<SearchResponse> {
+  if (!ENABLE_BUSINESS_AUDIT) {
+    throw new Error(
+      "Google Places bloqueado: ENABLE_BUSINESS_AUDIT está apagado (control de costos, src/config/features.ts).",
+    );
+  }
   const key = requireKey(env.GOOGLE_MAPS_API_KEY, "GOOGLE_MAPS_API_KEY");
   await limiter.wait();
 

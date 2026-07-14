@@ -7,6 +7,7 @@
  * Docs: https://developers.google.com/speed/docs/insights/v5/get-started
  */
 import { pagespeedKey, requireKey } from "@/server/config/env";
+import { ENABLE_BUSINESS_AUDIT } from "@/config/features";
 import { fetchJson, RateLimiter } from "@/server/lib/http";
 
 const PSI_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
@@ -36,6 +37,11 @@ export async function runPageSpeed(
   url: string,
   strategy: PsiStrategy,
 ): Promise<PsiScores> {
+  if (!ENABLE_BUSINESS_AUDIT) {
+    throw new Error(
+      "PageSpeed bloqueado: ENABLE_BUSINESS_AUDIT está apagado (control de costos, src/config/features.ts).",
+    );
+  }
   const key = requireKey(pagespeedKey(), "PAGESPEED_API_KEY (o GOOGLE_MAPS_API_KEY)");
   await limiter.wait();
 

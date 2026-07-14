@@ -1,0 +1,18 @@
+/**
+ * Feature flags — central kill-switches for costly or deprecated surfaces.
+ *
+ * Plain constants (no env access, no server-only imports) so both client
+ * components and server code can import them.
+ */
+
+/**
+ * Master switch for the business evaluation/audit machinery:
+ * Google Places scraping ("Evaluar") and PageSpeed audits ("Auditar").
+ *
+ * While `false`:
+ *  - the UI hides every Evaluar/Auditar action,
+ *  - the API routes that spend Google quota return 403,
+ *  - the Places/PageSpeed clients refuse to run (defense in depth,
+ *    also covers the CLI scripts `npm run scrape|audit|pipeline`).
+ */
+export const ENABLE_BUSINESS_AUDIT: boolean = false;

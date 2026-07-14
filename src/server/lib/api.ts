@@ -30,6 +30,17 @@ export function handleError(err: unknown) {
   );
 }
 
+/** 403 for endpoints switched off by a feature flag (cost control). */
+export function featureDisabled(flag: string) {
+  return NextResponse.json(
+    {
+      error: `Función deshabilitada por control de costos. El flag ${flag} está apagado (src/config/features.ts).`,
+      flag,
+    },
+    { status: 403 },
+  );
+}
+
 /** Parse and validate an integer route param. */
 export function parseId(value: string): number | null {
   const n = Number(value);
