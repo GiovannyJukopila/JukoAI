@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { apiGet, apiSend } from "../_lib";
-import { useLang, type Messages } from "../_i18n";
+import { useLang } from "../_i18n";
 
 type RadarItem = {
   id: number; topic: string; source: string; title: string; summary: string | null;

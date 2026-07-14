@@ -5,7 +5,7 @@
  * reprogramar. Publicación real: LinkedIn e Instagram (docs/SOCIAL_APIS.md);
  * YouTube/TikTok esperan audit; X pendiente de aprobación (API de pago).
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
@@ -458,7 +458,9 @@ function CalendarTab({ posts, reload, t, reduceMotion }: { posts: Post[]; reload
     return m;
   }, [posts]);
 
-  const drafts = useMemo(() => posts.filter((p) => !p.scheduledFor && p.status === "borrador"), [posts]);
+  // Solo borradores creados en Social Studio (createdBy) — los drafts históricos
+  // del pipeline de outreach (Phase 2) no pertenecen a esta cola.
+  const drafts = useMemo(() => posts.filter((p) => !p.scheduledFor && p.status === "borrador" && p.createdBy), [posts]);
 
   async function onDragEnd(e: DragEndEvent) {
     setDragging(null);

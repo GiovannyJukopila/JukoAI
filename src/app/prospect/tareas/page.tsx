@@ -6,7 +6,7 @@
  * Deep-link: /prospect/tareas?task=ID&comment=CID abre la tarea y resalta
  * el comentario (integración con el centro de notificaciones, 6.5).
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
@@ -259,7 +259,9 @@ function TaskCard({ task, t, onOpen }: { task: Task; t: Messages; onOpen: () => 
   );
 }
 
-function TaskCardBody({ task, t, overlay = false }: { task: Task; t: Messages; overlay?: boolean }) {
+// Memo: durante el drag dnd-kit re-renderiza todas las cards; el cuerpo solo
+// depende de `task` (identidad estable entre renders del board).
+const TaskCardBody = memo(function TaskCardBody({ task, t, overlay = false }: { task: Task; t: Messages; overlay?: boolean }) {
   const due = dueBadge(task, t);
   const pr = PRIORITY_STYLE[task.priority] ?? PRIORITY_STYLE.media;
   return (
@@ -285,7 +287,7 @@ function TaskCardBody({ task, t, overlay = false }: { task: Task; t: Messages; o
       )}
     </div>
   );
-}
+});
 
 /* ── Modal de creación ── */
 function CreateTaskModal({ column, users, t, reduceMotion, onClose, onCreated }: {

@@ -10,6 +10,40 @@ stack, tipos y deploy.
 
 ---
 
+## ⚡ Refactor 2026 — estructura actual del panel
+
+El panel se reorganizó (ver `docs/AUDIT_FASE0.md` y el plan de refactor). Secciones del sidebar:
+
+| Sección | Ruta | Qué es |
+|---|---|---|
+| **Negocios** | `/prospect/leads` | Vista unificada Leads + Cobertura: KPIs, analytics con drill-down, tabla con búsqueda/orden y panel "Cobertura por zona". |
+| **Social Studio** | `/prospect/social` | Cuentas conectadas (OAuth LinkedIn/Instagram), compositor con previews, calendario semanal con drag para reprogramar, publicación con reintentos. |
+| **Radar IA** | `/prospect/radar` | Top trends de Claude/OpenAI/content-AI vía `claude -p` + WebSearch (suscripción Pro). **Refresh solo manual.** |
+| **Tareas** | `/prospect/tareas` | Kanban drag & drop con comentarios estilo chat y deep-links desde notificaciones. |
+| **Goals** | `/prospect/goals` | Objetivos corto/mediano/largo con progreso derivado de tareas vinculadas o milestones. |
+| 🔔 Notificaciones | (campana en el topbar) | Asignaciones, comentarios, movimientos de tareas, goals y fallos de publicación. Polling 30 s. |
+
+### Feature flags (`src/config/features.ts`)
+
+| Flag | Default | Efecto |
+|---|---|---|
+| `ENABLE_BUSINESS_AUDIT` | `false` | 🔥 **Control de costos.** Apagado: se ocultan todos los botones Evaluar/Auditar, los endpoints `/scrape`, `/audit-batch` y `/leads/:id/audit` devuelven 403, y los clientes de Google Places/PageSpeed se niegan a ejecutar (cubre también `npm run scrape\|audit\|pipeline`). Ponlo en `true` para reactivar todo. |
+| `ENABLE_OPERATIONS` | `false` | Sección "Operaciones" (batch de agentes) oculta; su ruta redirige a Negocios. Código intacto. |
+| `ENABLE_CONTENT_INTEL` | `false` | Sección "Content Intel" (CIC) oculta; sus rutas redirigen a Negocios. Código intacto. |
+| `ENABLED_COUNTRIES` | `["Colombia","Malta"]` | Mercados activos. Los demás países siguen en la BD pero no aparecen en ningún listado/filtro. |
+
+### Tablas nuevas
+
+`notifications`, `radar_runs`, `radar_items`, `tasks`, `task_comments`, `goals` + columnas extra en `social_accounts`/`social_posts` (tokens cifrados, reintentos). DDL idempotente: `npm run app:migrate`.
+
+### Social Studio — para activar la publicación real
+
+1. Genera `SOCIAL_TOKEN_KEY` (cifra los tokens en BD): `openssl rand -base64 32`.
+2. Crea las apps y rellena `LINKEDIN_CLIENT_ID/SECRET` e `INSTAGRAM_APP_ID/SECRET` (pasos en `.env.example`; análisis completo de cada plataforma en `docs/SOCIAL_APIS.md`).
+3. Conecta las cuentas desde `/prospect/social` → Cuentas. YouTube/TikTok requieren audit de plataforma; X es de pago (pendiente de decisión).
+
+---
+
 ## Stack
 
 - **Next.js 16** (App Router) · **React 19** · **TypeScript** · **Tailwind 4**

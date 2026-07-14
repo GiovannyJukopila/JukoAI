@@ -93,7 +93,7 @@ export default function GoalsPage() {
             )}
             <AnimatePresence mode="popLayout">
               {byHorizon[h].map((g) => (
-                <GoalCard key={g.id} goal={g} users={users} t={t} reduceMotion={!!reduceMotion} highlighted={g.id === highlightId} onChanged={load} />
+                <GoalCard key={g.id} goal={g} t={t} reduceMotion={!!reduceMotion} highlighted={g.id === highlightId} onChanged={load} />
               ))}
             </AnimatePresence>
           </motion.section>
@@ -111,8 +111,8 @@ export default function GoalsPage() {
   );
 }
 
-function GoalCard({ goal, users, t, reduceMotion, highlighted, onChanged }: {
-  goal: Goal; users: string[]; t: Messages; reduceMotion: boolean; highlighted: boolean; onChanged: () => void;
+function GoalCard({ goal, t, reduceMotion, highlighted, onChanged }: {
+  goal: Goal; t: Messages; reduceMotion: boolean; highlighted: boolean; onChanged: () => void;
 }) {
   const [newMilestone, setNewMilestone] = useState("");
   const source = goal.tasksTotal > 0 ? "tasks" : (goal.milestones?.length ?? 0) > 0 ? "milestones" : "manual";
