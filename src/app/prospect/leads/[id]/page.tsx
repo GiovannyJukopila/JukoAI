@@ -5,6 +5,7 @@ import Link from "next/link";
 import { apiGet, apiSend, fmtDate, taskStatusColor, LEAD_STATUS_OPTIONS } from "../../_lib";
 import { Icons, ScoreRing, Meter, FlagPill, AgentCard, type AgentCardData } from "../../_components/viz";
 import { useLang, type Messages } from "../../_i18n";
+import { ENABLE_BUSINESS_AUDIT } from "@/config/features";
 
 type Detail = {
   business: Record<string, any>;
@@ -165,10 +166,10 @@ export default function LeadDetailPage() {
               className="cursor-pointer rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white">
               {LEAD_STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value} className="bg-[#111]">{statusLabel(s.value)}</option>)}
             </select>
-            <button onClick={reAudit} disabled={auditing}
+            {ENABLE_BUSINESS_AUDIT && <button onClick={reAudit} disabled={auditing}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-sm text-white transition-colors hover:bg-white/5 disabled:opacity-50">
               {Icons.refresh(15)} {auditing ? t.detail.auditing : a ? t.detail.reAudit : t.detail.audit}
-            </button>
+            </button>}
             <label className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/30 px-2 py-2 text-sm" title={t.detail.msgTitle}>
               <span className="text-xs text-[var(--ink-mute)]">{t.detail.msgIn}</span>
               <select value={msgLang} onChange={(e) => setMsgLang(e.target.value as "en" | "es")} className="cursor-pointer bg-transparent text-sm text-white focus:outline-none">

@@ -13,6 +13,7 @@ import {
 import { StatCard, ScoreBadge, Icons, Spinner } from "../_components/viz";
 import { Analytics } from "../_components/Analytics";
 import { useLang } from "../_i18n";
+import { ENABLE_BUSINESS_AUDIT } from "@/config/features";
 
 type CoverageResponse = { coverage: CoverageRow[]; progress: CountryProgress[] };
 type ZoneCat = { country: string; zone: string; zoneId: number; category: string; city?: string | null };
@@ -332,7 +333,7 @@ export default function CoveragePage() {
       </div>
 
       {/* Acciones de ciudad — evaluar todas las zonas / auditar todas las empresas */}
-      {!loading && fCountry && fCity && cityZones.length > 0 && (() => {
+      {ENABLE_BUSINESS_AUDIT && !loading && fCountry && fCity && cityZones.length > 0 && (() => {
         const anyJob = !!cityJob || Object.values(zoneJob).some(Boolean);
         return (
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
@@ -438,7 +439,7 @@ export default function CoveragePage() {
             {isOpen && (
               <div className="bg-black/20 p-3">
                 {/* Acciones generales de la zona */}
-                <div className="mb-3 flex flex-wrap items-center gap-2">
+                {ENABLE_BUSINESS_AUDIT && <div className="mb-3 flex flex-wrap items-center gap-2">
                   <button onClick={() => evaluateAllZone(z)} disabled={!!job || !!cityJob}
                     className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--violet)]/40 bg-[var(--violet)]/15 px-3 py-1.5 text-sm font-medium text-[var(--peri)] transition-colors hover:bg-[var(--violet)]/25 disabled:opacity-60">
                     {job?.mode === "eval" ? <><Spinner size={13} /> {t.coverage.evaluatingN(job.done, job.total)}</> : <>{t.coverage.evalAll}</>}
@@ -449,7 +450,7 @@ export default function CoveragePage() {
                     {job?.mode === "audit" ? <><Spinner size={13} /> {t.coverage.auditingN(job.done, job.total)}</> : <>{t.coverage.auditAll}</>}
                   </button>
                   {!allEvaluated && <span className="text-[11px] text-[var(--ink-mute)]">{t.coverage.unlock}</span>}
-                </div>
+                </div>}
 
                 {/* Grid de categorías */}
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -471,13 +472,13 @@ export default function CoveragePage() {
                             <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[st]}`} />
                             <span className="truncate text-sm text-white">{catLabel(c.id)}</span>
                           </div>
-                          <button onClick={() => scrape({ country: z.country, zone: z.name, city: z.city, zoneId: z.id, category: c.id }, st !== "missing")} disabled={isBusy}
+                          {ENABLE_BUSINESS_AUDIT && <button onClick={() => scrape({ country: z.country, zone: z.name, city: z.city, zoneId: z.id, category: c.id }, st !== "missing")} disabled={isBusy}
                             className={`inline-flex min-w-[68px] shrink-0 items-center justify-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors disabled:opacity-60 ${
                               st === "missing" ? "border-[var(--violet)]/40 bg-[var(--violet)]/15 text-[var(--peri)] hover:bg-[var(--violet)]/25"
                                 : st === "overdue" ? "border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
                                   : "border-white/15 text-[var(--ink-soft)] hover:bg-white/5"}`}>
                             {isBusy ? <Spinner size={13} /> : st === "missing" ? t.coverage.evaluar : t.coverage.refrescar}
-                          </button>
+                          </button>}
                         </div>
                         <div className="mt-0.5 text-[11px] text-[var(--ink-mute)]">{row ? t.coverage.businessesN(row.resultsCount, fmtDate(row.lastRunAt)) : t.coverage.notEvaluated}</div>
 
@@ -489,7 +490,7 @@ export default function CoveragePage() {
                                   <span className={aComplete ? "text-emerald-300" : "text-[var(--ink-soft)]"}>
                                     {a?.running ? `${t.coverage.auditedN(aDone, aTotal)}…` : aComplete ? t.coverage.auditedDoneN(aDone, aTotal) : t.coverage.auditedN(aDone, aTotal)}
                                   </span>
-                                  {!aComplete && (
+                                  {ENABLE_BUSINESS_AUDIT && !aComplete && (
                                     <button onClick={() => runAudit(z.id, c.id)} disabled={a?.running}
                                       className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-60">
                                       {a?.running ? <><Spinner size={10} /> {t.coverage.auditAll}</> : t.coverage.auditAll}
@@ -541,10 +542,10 @@ export default function CoveragePage() {
                             </div>
                             <div className="mt-auto flex gap-2">
                               <Link href={`/prospect/leads/${b.id}`} className="flex-1 cursor-pointer rounded-md border border-white/15 px-2 py-1 text-center text-[11px] text-white hover:bg-white/5">{t.coverage.viewCard}</Link>
-                              <button onClick={() => auditOne(b.id, z.id, cat)} disabled={auditingBiz === b.id}
+                              {ENABLE_BUSINESS_AUDIT && <button onClick={() => auditOne(b.id, z.id, cat)} disabled={auditingBiz === b.id}
                                 className="inline-flex cursor-pointer items-center justify-center gap-1 rounded-md border border-white/15 px-2 py-1 text-[11px] text-[var(--ink-soft)] hover:bg-white/5 disabled:opacity-60">
                                 {auditingBiz === b.id ? <Spinner size={11} /> : t.coverage.audit}
-                              </button>
+                              </button>}
                             </div>
                           </div>
                         ))}
