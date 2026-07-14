@@ -11,8 +11,8 @@
 |---|---|---|---|---|
 | **LinkedIn** | ✅ Sí (perfil propio) | 🟢 Baja | Gratis | Producto "Share on LinkedIn" self-serve, scope `w_member_social`. Token dura 60 días (refresh 365). ~100 llamadas/día/miembro. Requiere vincular una Company Page al crear la app. |
 | **Instagram (Meta)** | ✅ Sí (cuentas propias como testers) | 🟡 Media | Gratis | Cuenta **Professional** + página FB vinculada. En modo desarrollo, las cuentas con rol en la app (dev/tester) pueden usar `instagram_business_content_publish` **sin app review**. Review (2–4 semanas) solo para publicar en cuentas de terceros. Límite: 100 posts API/24h por cuenta. Sin stories API para no-terceros… (stories sí soportadas para professional). |
-| **YouTube** | ⚠️ Parcial (solo videos **privados**) | 🟡 Media | Gratis | `videos.insert` bajó a ~100 unidades (cuota diaria por defecto ~100 uploads). PERO: proyectos no auditados (post-2020) suben todo como **privado**. Audit de cumplimiento (2–4 semanas) para publicar público. |
-| **TikTok** | ⚠️ Parcial (solo **SELF_ONLY**) | 🔴 Alta | Gratis | Content Posting API sin audit: máx. 5 usuarios, cuenta en privado y posts solo visibles para ti. Audit obligatorio (días–semanas) para posts públicos. |
+| **YouTube** | ✅ **Implementado** (sube como **privado**) | 🟡 Media | Gratis | OAuth + resumable upload listos. Sin audit de Google el video queda **privado** → publicar desde YouTube Studio. Audit de cumplimiento (2–4 semanas) para publicación pública directa. `videos.insert` ≈100 unidades (~100 uploads/día de cuota). |
+| **TikTok** | ✅ **Implementado** (borrador a la **bandeja**) | 🟡 Media | Gratis | OAuth + upload listos en modo **inbox** (`video.upload`, sin audit): el video llega como notificación a la bandeja de TikTok y se termina de publicar en la app. Para post directo público: audit + scope `video.publish`. |
 | **X (Twitter)** | ✅ Sí, pero **de pago** | 🟢 Baja (técnica) / 🔴 (costo) | 💸 **$0.015/post** ($0.20 si lleva link); sin free tier desde feb-2026 | Nuevos developers solo tienen pay-per-use. Técnicamente lo más simple (OAuth 2.0 + POST /2/tweets), pero **viola la restricción "no servicios de pago sin preguntar"** → decisión del usuario. |
 
 ## Detalle por plataforma
@@ -48,6 +48,20 @@
 ## Alternativa transversal: agregadores tipo Blotato
 
 Servicios que ya pasaron todos los app reviews y exponen una sola API (Blotato ~$29–97/mes, Ayrshare, Post Bridge, upload-post…). Pros: cero trámites, todas las redes de una vez. Contras: **costo mensual** (→ también requiere aprobación), lock-in, y el contenido pasa por un tercero. Postiz (open-source, self-hosted) es gratis pero igual exige crear las apps por plataforma, así que no elimina la fricción.
+
+## Cómo pasar los audits de YouTube y TikTok (para publicación pública directa)
+
+Ambas integraciones ya funcionan en modo sin-audit (YouTube = privado, TikTok = borrador). Para quitar esa limitación:
+
+**YouTube (audit de cumplimiento de Google):**
+1. En Google Cloud Console → "OAuth consent screen" → publicar la app (salir de modo testing).
+2. Solicitar verificación de la marca + **YouTube API Services compliance audit**: formulario en https://support.google.com/youtube/contact/yt_api_form — describir el caso de uso (herramienta interna que sube videos propios), adjuntar demo del flujo OAuth.
+3. Tiempo típico: 2–4 semanas. Al aprobarse, los uploads pueden ser `public`/`unlisted` (cambiar `privacyStatus` en `publishers.ts`).
+
+**TikTok (app audit):**
+1. En developers.tiktok.com → tu app → añadir el scope `video.publish` (Direct Post) → "Submit for review".
+2. Requisitos: descripción del caso de uso, video demo del flujo completo, cumplir las [content sharing guidelines](https://developers.tiktok.com/doc/content-sharing-guidelines).
+3. Al aprobarse: cambiar el scope en `oauth.ts` (`video.upload` → añadir `video.publish`), reconectar la cuenta, y cambiar el publisher del modo inbox a Direct Post (`/v2/post/publish/video/init/` con `post_info`).
 
 ## Plan de implementación propuesto (orden por fricción)
 

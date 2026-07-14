@@ -9,7 +9,7 @@ import { env, requireKey } from "@/server/config/env";
 import type { SocialPlatform } from "@/server/db/schema";
 import { upsertConnectedAccount } from "@/server/services/social/accounts";
 
-export const OAUTH_PLATFORMS: SocialPlatform[] = ["linkedin", "instagram"];
+export const OAUTH_PLATFORMS: SocialPlatform[] = ["linkedin", "instagram", "youtube", "tiktok"];
 
 /** Cookie httpOnly con el state anti-CSRF del flujo en curso. */
 export const OAUTH_STATE_COOKIE = "social_oauth_state";
@@ -41,6 +41,32 @@ export function authorizeUrl(platform: SocialPlatform, state: string): string {
       state,
     });
     return `https://www.instagram.com/oauth/authorize?${p.toString()}`;
+  }
+  if (platform === "youtube") {
+    const id = requireKey(env.GOOGLE_OAUTH_CLIENT_ID, "GOOGLE_OAUTH_CLIENT_ID");
+    const p = new URLSearchParams({
+      client_id: id,
+      redirect_uri: redirectUri("youtube"),
+      response_type: "code",
+      scope: "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
+      access_type: "offline", // refresh_token
+      prompt: "consent", // fuerza refresh_token también en reconexiones
+      state,
+    });
+    return `https://accounts.google.com/o/oauth2/v2/auth?${p.toString()}`;
+  }
+  if (platform === "tiktok") {
+    const key = requireKey(env.TIKTOK_CLIENT_KEY, "TIKTOK_CLIENT_KEY");
+    const p = new URLSearchParams({
+      client_key: key,
+      response_type: "code",
+      // video.upload = subir borradores a la bandeja (no requiere audit);
+      // video.publish (post directo) se añade cuando pase el audit.
+      scope: "user.info.basic,video.upload",
+      redirect_uri: redirectUri("tiktok"),
+      state,
+    });
+    return `https://www.tiktok.com/v2/auth/authorize/?${p.toString()}`;
   }
   throw new Error(`OAuth no implementado para ${platform} (ver docs/SOCIAL_APIS.md)`);
 }
@@ -123,6 +149,70 @@ export async function handleCallback(platform: SocialPlatform, code: string) {
       expiresInSeconds: longTok.expires_in ?? 60 * 24 * 3600,
       scopes: "instagram_business_basic,instagram_business_content_publish",
       meta: { igUserId: String(me.user_id ?? shortTok.user_id) },
+    });
+  }
+
+  if (platform === "youtube") {
+    const tok = await postForm<{ access_token: string; refresh_token?: string; expires_in?: number; scope?: string }>(
+      "https://oauth2.googleapis.com/token",
+      {
+        code,
+        client_id: requireKey(env.GOOGLE_OAUTH_CLIENT_ID, "GOOGLE_OAUTH_CLIENT_ID"),
+        client_secret: requireKey(env.GOOGLE_OAUTH_CLIENT_SECRET, "GOOGLE_OAUTH_CLIENT_SECRET"),
+        redirect_uri: redirectUri("youtube"),
+        grant_type: "authorization_code",
+      },
+    );
+    // Canal propio para nombre y avatar.
+    const chRes = await fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", {
+      headers: { Authorization: `Bearer ${tok.access_token}` },
+    });
+    if (!chRes.ok) throw new Error(`YouTube channels HTTP ${chRes.status}`);
+    const ch = (await chRes.json()) as {
+      items?: { id: string; snippet?: { title?: string; thumbnails?: { default?: { url?: string } } } }[];
+    };
+    const channel = ch.items?.[0];
+    return upsertConnectedAccount({
+      platform: "youtube",
+      accountName: channel?.snippet?.title ?? "YouTube",
+      externalId: channel?.id ?? null,
+      handle: channel?.snippet?.title ?? null,
+      avatarUrl: channel?.snippet?.thumbnails?.default?.url ?? null,
+      accessToken: tok.access_token,
+      refreshToken: tok.refresh_token ?? null,
+      expiresInSeconds: tok.expires_in ?? 3600,
+      scopes: tok.scope ?? "youtube.upload youtube.readonly",
+      meta: { channelId: channel?.id ?? null },
+    });
+  }
+
+  if (platform === "tiktok") {
+    const tok = await postForm<{
+      access_token: string; refresh_token?: string; expires_in?: number; open_id?: string; scope?: string;
+    }>("https://open.tiktokapis.com/v2/oauth/token/", {
+      client_key: requireKey(env.TIKTOK_CLIENT_KEY, "TIKTOK_CLIENT_KEY"),
+      client_secret: requireKey(env.TIKTOK_CLIENT_SECRET, "TIKTOK_CLIENT_SECRET"),
+      code,
+      grant_type: "authorization_code",
+      redirect_uri: redirectUri("tiktok"),
+    });
+    const meRes = await fetch("https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url", {
+      headers: { Authorization: `Bearer ${tok.access_token}` },
+    });
+    const me = meRes.ok
+      ? ((await meRes.json()) as { data?: { user?: { open_id?: string; display_name?: string; avatar_url?: string } } }).data?.user
+      : undefined;
+    return upsertConnectedAccount({
+      platform: "tiktok",
+      accountName: me?.display_name ?? "TikTok",
+      externalId: me?.open_id ?? tok.open_id ?? null,
+      handle: me?.display_name ? `@${me.display_name}` : null,
+      avatarUrl: me?.avatar_url ?? null,
+      accessToken: tok.access_token,
+      refreshToken: tok.refresh_token ?? null,
+      expiresInSeconds: tok.expires_in ?? 86400, // access token de TikTok dura 24 h
+      scopes: tok.scope ?? "user.info.basic,video.upload",
+      meta: { openId: me?.open_id ?? tok.open_id ?? null },
     });
   }
 

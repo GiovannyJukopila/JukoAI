@@ -28,9 +28,11 @@ type Stats = { borrador: number; programado: number; publicado: number; fallido:
 
 type Platform = "linkedin" | "instagram" | "youtube" | "tiktok" | "x";
 const PLATFORMS: Platform[] = ["linkedin", "instagram", "youtube", "tiktok", "x"];
-/** Estado de integración según docs/SOCIAL_APIS.md. */
+/** Estado de integración según docs/SOCIAL_APIS.md.
+ * youtube/tiktok tienen OAuth completo: publican en modo sin-audit
+ * (YouTube = video privado, TikTok = borrador en la bandeja de la app). */
 const INTEGRATION: Record<Platform, "oauth" | "audit" | "paid"> = {
-  linkedin: "oauth", instagram: "oauth", youtube: "audit", tiktok: "audit", x: "paid",
+  linkedin: "oauth", instagram: "oauth", youtube: "oauth", tiktok: "oauth", x: "paid",
 };
 const CHAR_LIMIT: Record<Platform, number> = { linkedin: 3000, instagram: 2200, youtube: 5000, tiktok: 2200, x: 280 };
 const BRAND: Record<Platform, { label: string; color: string }> = {
@@ -230,6 +232,11 @@ function AccountsTab({ accounts, onDisconnect, t }: { accounts: Account[] | null
               </div>
             )}
             {acc?.status === "error" && acc.lastError && <p className="text-xs text-rose-300">{acc.lastError}</p>}
+            {(p === "youtube" || p === "tiktok") && (
+              <p className="rounded-lg border border-sky-500/20 bg-sky-500/[0.05] px-2.5 py-1.5 text-[10px] leading-relaxed text-sky-300/80">
+                {p === "youtube" ? t.social.ytNote : t.social.ttNote}
+              </p>
+            )}
 
             <div className="mt-auto">
               {connected ? (
@@ -271,11 +278,14 @@ function ComposerTab({ connected, t, onSaved }: { connected: Set<string>; t: Mes
 
   const toggle = (p: Platform) => setSelected((s) => (s.includes(p) ? s.filter((x) => x !== p) : [...s, p]));
   const igInvalid = selected.includes("instagram") && media.length === 0;
+  const hasVideo = media.some((m) => /\.(mp4|mov|webm)(\?|$)/i.test(m));
+  const videoInvalid = (selected.includes("youtube") || selected.includes("tiktok")) && !hasVideo;
 
   async function save(mode: "draft" | "schedule" | "now") {
     setMsg(null);
     if (!selected.length) { setMsg(t.social.pickPlatform); return; }
     if (igInvalid) { setMsg(t.social.igNeedsMedia); return; }
+    if (videoInvalid && mode !== "draft") { setMsg(t.social.videoNeeded); return; }
     setBusy(mode);
     try {
       const { posts } = await apiSend<{ posts: { id: number }[] }>("/api/prospect/social/posts", "POST", {

@@ -138,5 +138,37 @@ async function refreshPlatformToken(platform: SocialPlatform, accessToken: strin
     const d = (await res.json()) as { access_token: string; expires_in?: number };
     return { accessToken: d.access_token, expiresInSeconds: d.expires_in ?? null };
   }
+  if (platform === "youtube" && refreshToken && env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET) {
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: env.GOOGLE_OAUTH_CLIENT_ID,
+        client_secret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+      }),
+    });
+    if (!res.ok) throw new Error(`YouTube refresh HTTP ${res.status}`);
+    const d = (await res.json()) as { access_token: string; expires_in?: number };
+    // Google no rota el refresh_token en cada uso: conservamos el existente.
+    return { accessToken: d.access_token, expiresInSeconds: d.expires_in ?? 3600 };
+  }
+  if (platform === "tiktok" && refreshToken && env.TIKTOK_CLIENT_KEY && env.TIKTOK_CLIENT_SECRET) {
+    const res = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_key: env.TIKTOK_CLIENT_KEY,
+        client_secret: env.TIKTOK_CLIENT_SECRET,
+      }),
+    });
+    if (!res.ok) throw new Error(`TikTok refresh HTTP ${res.status}`);
+    // TikTok SÍ rota el refresh_token: hay que guardar el nuevo.
+    const d = (await res.json()) as { access_token: string; refresh_token?: string; expires_in?: number };
+    return { accessToken: d.access_token, refreshToken: d.refresh_token ?? null, expiresInSeconds: d.expires_in ?? 86400 };
+  }
   return null;
 }

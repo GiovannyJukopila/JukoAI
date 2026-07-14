@@ -3,7 +3,9 @@ import { updatePost, deletePost, publishPost } from "@/server/services/social/po
 import { ok, badRequest, handleError, parseId } from "@/server/lib/api";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120; // publicar un reel espera el procesamiento de IG
+// Publicar puede descargar y subir videos de hasta 64 MB (YouTube/TikTok) o
+// esperar el procesamiento de un reel de IG.
+export const maxDuration = 300;
 
 /** PATCH /api/prospect/social/posts/:id { content?, media?, scheduledFor?, status? } */
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {

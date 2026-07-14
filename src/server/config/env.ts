@@ -48,6 +48,15 @@ const schema = z.object({
   // como testers → sin app review).
   INSTAGRAM_APP_ID: z.string().optional(),
   INSTAGRAM_APP_SECRET: z.string().optional(),
+  // YouTube: OAuth client (Web) del proyecto GCP con YouTube Data API v3.
+  // Sin audit de Google los videos se suben como PRIVADOS (se publican a mano
+  // desde YouTube Studio). Distinto de GOOGLE_MAPS_API_KEY (eso es una API key).
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
+  // TikTok: app en developers.tiktok.com con Login Kit + Content Posting API.
+  // Sin audit los videos llegan como BORRADOR a la bandeja de la app TikTok.
+  TIKTOK_CLIENT_KEY: z.string().optional(),
+  TIKTOK_CLIENT_SECRET: z.string().optional(),
 
   // Optional shared-secret gate for the internal tool (checked in middleware/proxy).
   PROSPECT_AUTH_TOKEN: z.string().optional(),
