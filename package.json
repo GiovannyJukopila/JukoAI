@@ -6,24 +6,45 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "scrape": "tsx src/scripts/scrape.ts",
+    "audit": "tsx src/scripts/audit.ts",
+    "pipeline": "tsx src/scripts/pipeline.ts",
+    "seed:zones": "tsx src/scripts/seed-zones.ts",
+    "intel:migrate": "tsx src/scripts/intel-migrate.ts",
+    "intel:run": "tsx src/scripts/intel-run.ts",
+    "tunnel": "cloudflared tunnel --url http://localhost:3000"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
+    "cheerio": "^1.2.0",
+    "drizzle-orm": "^0.45.2",
     "framer-motion": "^12.40.0",
     "next": "16.2.9",
     "nodemailer": "^8.0.11",
+    "pg": "^8.22.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }

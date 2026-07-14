@@ -26,7 +26,11 @@ export function Footer({ locale }: { locale: Locale }) {
         </div>
       </div>
       <div className="footer__bottom">
-        <span>© {year} Juko AI</span>
+        <span>
+          {/* Acceso discreto al panel interno: el © es el enlace al login. */}
+          <Link href="/prospect" aria-label="Acceso al panel" title="Acceso" className="cursor-pointer transition-opacity hover:opacity-60">©</Link>
+          {" "}{year} Juko AI
+        </span>
         <span>{dict.footer.made}</span>
       </div>
     </footer>
