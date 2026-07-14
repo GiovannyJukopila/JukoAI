@@ -34,6 +34,7 @@ function deepLink(n: NotificationRow): string | null {
     return `/prospect/tareas?task=${n.entityId}${commentId ? `&comment=${commentId}` : ""}`;
   }
   if (n.entityType === "goal" && n.entityId != null) return `/prospect/goals?goal=${n.entityId}`;
+  if (n.entityType === "social_post") return "/prospect/social";
   return null;
 }
 

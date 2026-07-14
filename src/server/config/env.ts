@@ -35,6 +35,20 @@ const schema = z.object({
 
   DEFAULT_REFRESH_DAYS: z.coerce.number().int().positive().default(90),
 
+  // ── Social Studio (Fase 4) ──
+  // Base pública de la app para construir los redirect_uri de OAuth.
+  APP_BASE_URL: z.string().url().default("http://localhost:3000"),
+  // Clave para cifrar tokens sociales (AES-256-GCM). Cualquier string larga;
+  // se deriva con SHA-256. Sin ella, conectar cuentas falla con mensaje claro.
+  SOCIAL_TOKEN_KEY: z.string().optional(),
+  // LinkedIn: app con productos "Share on LinkedIn" + "Sign In with LinkedIn (OpenID)".
+  LINKEDIN_CLIENT_ID: z.string().optional(),
+  LINKEDIN_CLIENT_SECRET: z.string().optional(),
+  // Instagram: app Meta con "Instagram API with Instagram Login" (cuentas propias
+  // como testers → sin app review).
+  INSTAGRAM_APP_ID: z.string().optional(),
+  INSTAGRAM_APP_SECRET: z.string().optional(),
+
   // Optional shared-secret gate for the internal tool (checked in middleware/proxy).
   PROSPECT_AUTH_TOKEN: z.string().optional(),
 

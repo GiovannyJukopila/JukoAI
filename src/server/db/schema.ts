@@ -360,15 +360,26 @@ export const outreachMessages = pgTable(
 /* ───────────────────────── Phase 2: social_accounts ─────────────────────────
  * Prepared for future OAuth — no auth flow implemented yet. */
 
+export const SOCIAL_PLATFORMS = ["linkedin", "instagram", "youtube", "tiktok", "x"] as const;
+export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+
 export const socialAccounts = pgTable("social_accounts", {
   id: serial("id").primaryKey(),
-  platform: text("platform").notNull(), // meta | instagram | linkedin | blotato
+  platform: text("platform").notNull(), // SocialPlatform
   accountName: text("account_name").notNull(),
   externalId: text("external_id"),
-  // Tokens are intentionally NOT stored yet. Column reserved for the future
-  // SocialPublisher integration; will be encrypted at that point.
+  // Legacy placeholder column (unused). Real tokens live in the *_enc columns.
   accessTokenRef: text("access_token_ref"),
-  status: text("status").notNull().default("disconnected"), // disconnected|connected
+  // Social Studio (Fase 4): tokens cifrados AES-256-GCM con SOCIAL_TOKEN_KEY.
+  handle: text("handle"),
+  avatarUrl: text("avatar_url"),
+  accessTokenEnc: text("access_token_enc"),
+  refreshTokenEnc: text("refresh_token_enc"),
+  tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
+  scopes: text("scopes"),
+  meta: jsonb("meta").$type<Record<string, unknown>>(), // p.ej. { igUserId, pageId }
+  status: text("status").notNull().default("disconnected"), // disconnected|connected|error
+  lastError: text("last_error"),
   connectedAt: timestamp("connected_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -392,13 +403,18 @@ export const socialPosts = pgTable(
     platform: text("platform").notNull(),
     content: text("content").notNull(),
     media: jsonb("media").$type<string[]>(),
-    status: text("status").notNull().default("borrador"), // borrador|programado|publicado|error
+    status: text("status").notNull().default("borrador"), // borrador|programado|publicado|fallido
     scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     externalPostId: text("external_post_id"),
+    // Social Studio (Fase 4): autoría, errores y reintentos del dispatcher.
+    createdBy: text("created_by"),
+    errorMessage: text("error_message"),
+    retries: integer("retries").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("social_posts_status_idx").on(t.status)],
+  (t) => [index("social_posts_status_idx").on(t.status), index("social_posts_sched_idx").on(t.scheduledFor)],
 );
 
 /* ───────────────────────── Phase 2: api_usage (cost/usage control) ───────────────────────── */
@@ -702,6 +718,45 @@ export const notifications = pgTable(
     index("notifications_user_read_idx").on(t.userTo, t.read),
     index("notifications_created_idx").on(t.createdAt),
   ],
+);
+
+/* ───────────────────────── Radar IA (Fase 5 del refactor) ─────────────────
+ * Top trends sobre Claude/Anthropic, OpenAI e IA para creación de contenido.
+ * Refresh SIEMPRE manual (control de costos/limites de la suscripción): cada
+ * refresh crea un radar_run con sus items; la UI muestra el último run (caché). */
+
+export const RADAR_TOPICS = ["claude", "openai", "content_ai"] as const;
+export type RadarTopic = (typeof RADAR_TOPICS)[number];
+export const RADAR_SOURCES = ["x", "reddit", "news"] as const;
+export type RadarSource = (typeof RADAR_SOURCES)[number];
+
+export const radarRuns = pgTable("radar_runs", {
+  id: serial("id").primaryKey(),
+  status: text("status").notNull().default("ok"), // ok | error
+  error: text("error"),
+  startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  finishedAt: timestamp("finished_at", { withTimezone: true }),
+  stats: jsonb("stats").$type<Record<string, number>>(),
+});
+
+export const radarItems = pgTable(
+  "radar_items",
+  {
+    id: serial("id").primaryKey(),
+    runId: integer("run_id")
+      .notNull()
+      .references(() => radarRuns.id, { onDelete: "cascade" }),
+    topic: text("topic").notNull(), // RadarTopic
+    source: text("source").notNull(), // RadarSource
+    title: text("title").notNull(),
+    summary: text("summary"),
+    url: text("url"),
+    sentiment: text("sentiment"), // positivo | neutral | negativo
+    relevance: integer("relevance"), // 0–100
+    publishedHint: text("published_hint"), // "hace 3 h", "12 jul", … (texto del agente)
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("radar_items_run_idx").on(t.runId)],
 );
 
 /* ───────────────────────── relations ───────────────────────── */

@@ -30,14 +30,28 @@ const NavIcon = {
       <path d="M3 17l5-5 4 4 8-9" /><path d="M15 7h6v6" /><circle cx="8" cy="12" r="1.4" fill="currentColor" stroke="none" />
     </svg>
   ),
+  social: (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+      <path d="M8.6 10.5 15.4 6.6M8.6 13.5l6.8 3.9" />
+    </svg>
+  ),
+  radar: (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19.07 4.93A10 10 0 1 0 22 12" /><path d="M15.54 8.46A5 5 0 1 0 17 12" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" /><path d="m12 12 7-7" />
+    </svg>
+  ),
 };
 
-type Section = "leads" | "coverage" | "operations" | "intel";
-// Sidebar order (plan Fase 2.5): Negocios → [Social Studio → Radar IA → Tareas →
+type Section = "leads" | "coverage" | "operations" | "intel" | "social" | "radar";
+// Sidebar order (plan Fase 2.5): Negocios → Social Studio → Radar IA → [Tareas →
 // Goals llegan en fases posteriores]. Operaciones y Content Intel quedan detrás
 // de flags (deprecadas, código intacto).
 const NAV: { key: Section; href: string }[] = [
   { key: "leads", href: "/prospect/leads" },
+  { key: "social", href: "/prospect/social" },
+  { key: "radar", href: "/prospect/radar" },
   ...(ENABLE_OPERATIONS ? [{ key: "operations", href: "/prospect/operations" } as const] : []),
   ...(ENABLE_CONTENT_INTEL ? [{ key: "intel", href: "/prospect/intel" } as const] : []),
 ];
