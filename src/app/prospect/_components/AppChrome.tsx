@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { apiGet } from "../_lib";
 import { UserMenu } from "./UserMenu";
 import { useLang, type Lang } from "../_i18n";
+import { ENABLE_OPERATIONS, ENABLE_CONTENT_INTEL } from "@/config/features";
 
 /* ── SVG nav icon set (stroke, currentColor, 24-grid) ──────────────── */
 const NavIcon = {
@@ -31,11 +32,13 @@ const NavIcon = {
 };
 
 type Section = "leads" | "coverage" | "operations" | "intel";
+// Sidebar order (plan Fase 2.5): Negocios → [Social Studio → Radar IA → Tareas →
+// Goals llegan en fases posteriores]. Operaciones y Content Intel quedan detrás
+// de flags (deprecadas, código intacto).
 const NAV: { key: Section; href: string }[] = [
   { key: "leads", href: "/prospect/leads" },
-  { key: "coverage", href: "/prospect/coverage" },
-  { key: "operations", href: "/prospect/operations" },
-  { key: "intel", href: "/prospect/intel" },
+  ...(ENABLE_OPERATIONS ? [{ key: "operations", href: "/prospect/operations" } as const] : []),
+  ...(ENABLE_CONTENT_INTEL ? [{ key: "intel", href: "/prospect/intel" } as const] : []),
 ];
 
 export function AppChrome({ user, showChrome, children }: { user: string | null; showChrome: boolean; children: ReactNode }) {

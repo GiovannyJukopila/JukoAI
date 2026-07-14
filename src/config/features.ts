@@ -18,6 +18,15 @@
 export const ENABLE_BUSINESS_AUDIT: boolean = false;
 
 /**
+ * Deprecated sections (Fase 2 del plan de refactor). Hidden from the sidebar
+ * and their routes redirect to /prospect/leads while off. Code kept intact.
+ * "Operaciones" → batch AI pipeline view; "Content Intel" → CIC trends UI
+ * (replaced by Social Studio + Radar IA in later phases).
+ */
+export const ENABLE_OPERATIONS: boolean = false;
+export const ENABLE_CONTENT_INTEL: boolean = false;
+
+/**
  * Active markets. Countries not on this list disappear from every dropdown,
  * navigator and listing — the rows stay untouched in the database, they are
  * only filtered out server-side. Values must match the `country` text stored
