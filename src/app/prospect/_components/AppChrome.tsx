@@ -48,17 +48,22 @@ const NavIcon = {
       <path d="M19 5h2v14h-2" />
     </svg>
   ),
+  goals: (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 13V2l8 4-8 4" /><path d="M20.55 10.23A9 9 0 1 1 8 4.94" /><path d="M8 10a5 5 0 1 0 8.9 2.02" />
+    </svg>
+  ),
 };
 
-type Section = "leads" | "coverage" | "operations" | "intel" | "social" | "radar" | "tareas";
+type Section = "leads" | "coverage" | "operations" | "intel" | "social" | "radar" | "tareas" | "goals";
 // Sidebar order (plan Fase 2.5): Negocios → Social Studio → Radar IA → Tareas →
-// [Goals llega en la Fase 7]. Operaciones y Content Intel quedan detrás
-// de flags (deprecadas, código intacto).
+// Goals. Operaciones y Content Intel quedan detrás de flags (deprecadas).
 const NAV: { key: Section; href: string }[] = [
   { key: "leads", href: "/prospect/leads" },
   { key: "social", href: "/prospect/social" },
   { key: "radar", href: "/prospect/radar" },
   { key: "tareas", href: "/prospect/tareas" },
+  { key: "goals", href: "/prospect/goals" },
   ...(ENABLE_OPERATIONS ? [{ key: "operations", href: "/prospect/operations" } as const] : []),
   ...(ENABLE_CONTENT_INTEL ? [{ key: "intel", href: "/prospect/intel" } as const] : []),
 ];

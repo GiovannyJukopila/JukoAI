@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       priority: body?.priority,
       dueDate: body?.dueDate ?? null,
       labels: Array.isArray(body?.labels) ? body.labels.map(String) : null,
+      goalId: Number.isInteger(body?.goalId) ? body.goalId : null,
       createdBy: user,
     });
     return ok({ task }, { status: 201 });

@@ -90,13 +90,31 @@ CREATE TABLE IF NOT EXISTS task_comments (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS task_comments_task_idx ON task_comments (task_id);
+
+-- Fase 7: Goals (corto/mediano/largo) + vínculo tareas→goal.
+CREATE TABLE IF NOT EXISTS goals (
+  id serial PRIMARY KEY,
+  title text NOT NULL,
+  description text,
+  owner text,
+  created_by text NOT NULL,
+  horizon text NOT NULL DEFAULT 'corto',
+  progress integer NOT NULL DEFAULT 0,
+  milestones jsonb,
+  target_date timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS goals_horizon_idx ON goals (horizon);
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS goal_id integer REFERENCES goals(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS tasks_goal_idx ON tasks (goal_id);
 `;
 
 async function main() {
   const client = await pool.connect();
   try {
     await client.query(DDL);
-    console.log("✅ app-migrate: notifications + social + radar + tasks listo.");
+    console.log("✅ app-migrate: todas las tablas del refactor listas (notifications, social, radar, tasks, goals).");
   } finally {
     client.release();
     await pool.end();

@@ -781,10 +781,42 @@ export const tasks = pgTable(
     priority: text("priority").notNull().default("media"), // TaskPriority
     dueDate: timestamp("due_date", { withTimezone: true }),
     labels: jsonb("labels").$type<string[]>(),
+    // Fase 7.3: tarea vinculada a un goal (el progreso del goal se deriva de
+    // sus tareas hechas). Sin FK drizzle para evitar referencia circular con
+    // la declaración de `goals` más abajo; la FK real vive en el DDL.
+    goalId: integer("goal_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("tasks_column_idx").on(t.column, t.sortOrder)],
+);
+
+/* ───────────────────────── Goals (Fase 7 del refactor) ──────────────────────
+ * Tres horizontes: corto (≤1 mes), mediano (1–6 meses), largo (6+ meses).
+ * Progreso efectivo (calculado en el servicio): tareas vinculadas hechas >
+ * milestones completados > % manual. */
+
+export const GOAL_HORIZONS = ["corto", "mediano", "largo"] as const;
+export type GoalHorizon = (typeof GOAL_HORIZONS)[number];
+
+export type GoalMilestone = { text: string; done: boolean };
+
+export const goals = pgTable(
+  "goals",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    owner: text("owner"), // username dueño
+    createdBy: text("created_by").notNull(),
+    horizon: text("horizon").notNull().default("corto"), // GoalHorizon
+    progress: integer("progress").notNull().default(0), // % manual (fallback)
+    milestones: jsonb("milestones").$type<GoalMilestone[]>(),
+    targetDate: timestamp("target_date", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("goals_horizon_idx").on(t.horizon)],
 );
 
 export const taskComments = pgTable(

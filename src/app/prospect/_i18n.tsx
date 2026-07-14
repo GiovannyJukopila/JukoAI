@@ -10,7 +10,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 export type Lang = "es" | "en";
 
 const es = {
-  nav: { leads: "Negocios", coverage: "Cobertura", operations: "Operaciones", intel: "Content Intel", social: "Social Studio", radar: "Radar IA", tareas: "Tareas", logout: "Salir" },
+  nav: { leads: "Negocios", coverage: "Cobertura", operations: "Operaciones", intel: "Content Intel", social: "Social Studio", radar: "Radar IA", tareas: "Tareas", goals: "Goals", logout: "Salir" },
   tasks: {
     title: "Tareas",
     subtitle: "Kanban compartido: arrastra entre columnas, comenta y reporta avances.",
@@ -37,6 +37,32 @@ const es = {
     dueToday: "Hoy",
     createdBy: (u: string) => `creada por ${u}`,
     titleRequired: "Ponle un título a la tarea.",
+    fGoal: "Goal vinculado",
+    noGoal: "Sin goal",
+  },
+  goals: {
+    title: "Goals",
+    subtitle: "Objetivos a corto, mediano y largo plazo — con progreso real.",
+    newGoal: "Nuevo goal",
+    hLabels: { corto: "Corto plazo", mediano: "Mediano plazo", largo: "Largo plazo" } as Record<string, string>,
+    hHints: { corto: "≤ 1 mes", mediano: "1–6 meses", largo: "6+ meses" } as Record<string, string>,
+    empty: "Sin goals en este horizonte.",
+    emptySub: "Crea el primero con «Nuevo goal».",
+    fTitle: "Título",
+    fDesc: "Descripción",
+    fOwner: "Dueño",
+    fHorizon: "Horizonte",
+    fTarget: "Fecha objetivo",
+    fProgress: "Progreso manual (%)",
+    create: "Crear goal",
+    del: "Eliminar",
+    confirmDelete: "¿Eliminar este goal? Las tareas vinculadas quedan sin goal.",
+    milestones: "Milestones",
+    addMilestone: "Añadir milestone…",
+    linkedTasks: (done: number, total: number) => `${done}/${total} tareas`,
+    progressFrom: { tasks: "por tareas", milestones: "por milestones", manual: "manual" } as Record<string, string>,
+    titleRequired: "Ponle un título al goal.",
+    targetFor: (d: string) => `objetivo: ${d}`,
   },
   radar: {
     title: "Radar IA",
@@ -430,7 +456,7 @@ const es = {
 };
 
 const en: typeof es = {
-  nav: { leads: "Businesses", coverage: "Coverage", operations: "Operations", intel: "Content Intel", social: "Social Studio", radar: "AI Radar", tareas: "Tasks", logout: "Log out" },
+  nav: { leads: "Businesses", coverage: "Coverage", operations: "Operations", intel: "Content Intel", social: "Social Studio", radar: "AI Radar", tareas: "Tasks", goals: "Goals", logout: "Log out" },
   tasks: {
     title: "Tasks",
     subtitle: "Shared kanban: drag between columns, comment and report progress.",
@@ -457,6 +483,32 @@ const en: typeof es = {
     dueToday: "Today",
     createdBy: (u: string) => `created by ${u}`,
     titleRequired: "Give the task a title.",
+    fGoal: "Linked goal",
+    noGoal: "No goal",
+  },
+  goals: {
+    title: "Goals",
+    subtitle: "Short, medium and long-term objectives — with real progress.",
+    newGoal: "New goal",
+    hLabels: { corto: "Short term", mediano: "Medium term", largo: "Long term" } as Record<string, string>,
+    hHints: { corto: "≤ 1 month", mediano: "1–6 months", largo: "6+ months" } as Record<string, string>,
+    empty: "No goals in this horizon.",
+    emptySub: "Create the first one with “New goal”.",
+    fTitle: "Title",
+    fDesc: "Description",
+    fOwner: "Owner",
+    fHorizon: "Horizon",
+    fTarget: "Target date",
+    fProgress: "Manual progress (%)",
+    create: "Create goal",
+    del: "Delete",
+    confirmDelete: "Delete this goal? Linked tasks are kept without a goal.",
+    milestones: "Milestones",
+    addMilestone: "Add milestone…",
+    linkedTasks: (done: number, total: number) => `${done}/${total} tasks`,
+    progressFrom: { tasks: "from tasks", milestones: "from milestones", manual: "manual" } as Record<string, string>,
+    titleRequired: "Give the goal a title.",
+    targetFor: (d: string) => `target: ${d}`,
   },
   radar: {
     title: "AI Radar",

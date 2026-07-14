@@ -43,6 +43,7 @@ export type CreateTaskInput = {
   priority?: string;
   dueDate?: string | null;
   labels?: string[] | null;
+  goalId?: number | null;
   createdBy: string;
 };
 
@@ -65,6 +66,7 @@ export async function createTask(input: CreateTaskInput) {
       priority: input.priority ?? "media",
       dueDate: input.dueDate ? new Date(input.dueDate) : null,
       labels: input.labels ?? null,
+      goalId: input.goalId ?? null,
     })
     .returning();
 
@@ -89,6 +91,7 @@ export type UpdateTaskInput = {
   priority?: string;
   dueDate?: string | null;
   labels?: string[] | null;
+  goalId?: number | null;
   column?: TaskColumn;
   /** Orden final (ids) de la columna destino tras un drop. */
   orderedIds?: number[];
@@ -106,6 +109,7 @@ export async function updateTask(id: number, input: UpdateTaskInput) {
   if (input.priority !== undefined) set.priority = input.priority;
   if (input.dueDate !== undefined) set.dueDate = input.dueDate ? new Date(input.dueDate) : null;
   if (input.labels !== undefined) set.labels = input.labels;
+  if (input.goalId !== undefined) set.goalId = input.goalId;
   if (input.column !== undefined) set.column = input.column;
 
   const [row] = await db.update(tasks).set(set).where(eq(tasks.id, id)).returning();

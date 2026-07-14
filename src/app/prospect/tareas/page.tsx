@@ -22,9 +22,10 @@ import { useLang, type Messages } from "../_i18n";
 type Task = {
   id: number; title: string; description: string | null; assignedTo: string | null;
   createdBy: string; column: string; sortOrder: number; priority: string;
-  dueDate: string | null; labels: string[] | null; commentsCount: number;
+  dueDate: string | null; labels: string[] | null; goalId: number | null; commentsCount: number;
   createdAt: string; updatedAt: string;
 };
+type GoalOption = { id: number; title: string };
 type Comment = { id: number; author: string; body: string; createdAt: string };
 type TaskDetail = Task & { comments: Comment[] };
 
@@ -67,6 +68,7 @@ export default function TasksPage() {
   const [tasksById, setTasksById] = useState<Map<number, Task>>(new Map());
   const [board, setBoard] = useState<Record<string, number[]>>({ backlog: [], en_progreso: [], en_revision: [], hecho: [] });
   const [users, setUsers] = useState<string[]>([]);
+  const [goals, setGoals] = useState<GoalOption[]>([]);
   const [me, setMe] = useState<string>("");
   const [activeId, setActiveId] = useState<number | null>(null);
   const [openTask, setOpenTask] = useState<number | null>(null);
@@ -88,6 +90,7 @@ export default function TasksPage() {
   useEffect(() => {
     load();
     apiGet<{ users: string[]; me: string | null }>("/api/prospect/users").then((d) => { setUsers(d.users); setMe(d.me ?? ""); }).catch(() => {});
+    apiGet<{ goals: GoalOption[] }>("/api/prospect/goals").then((d) => setGoals(d.goals)).catch(() => {});
     const id = setInterval(load, 30_000);
     const onVisible = () => { if (document.visibilityState === "visible") load(); };
     document.addEventListener("visibilitychange", onVisible);
@@ -216,7 +219,7 @@ export default function TasksPage() {
             onCreated={() => { setCreateIn(null); load(); }} />
         )}
         {openTask != null && (
-          <TaskModal key={openTask} taskId={openTask} users={users} me={me} t={t} reduceMotion={!!reduceMotion}
+          <TaskModal key={openTask} taskId={openTask} users={users} goals={goals} me={me} t={t} reduceMotion={!!reduceMotion}
             highlightComment={Number(search.get("comment")) || null}
             onClose={() => { setOpenTask(null); window.history.replaceState(null, "", "/prospect/tareas"); }}
             onChanged={load} />
@@ -364,8 +367,8 @@ function CreateTaskModal({ column, users, t, reduceMotion, onClose, onCreated }:
 }
 
 /* ── Modal de detalle (6.4): edición inline + hilo de comentarios ── */
-function TaskModal({ taskId, users, me, t, reduceMotion, highlightComment, onClose, onChanged }: {
-  taskId: number; users: string[]; me: string; t: Messages; reduceMotion: boolean;
+function TaskModal({ taskId, users, goals, me, t, reduceMotion, highlightComment, onClose, onChanged }: {
+  taskId: number; users: string[]; goals: GoalOption[]; me: string; t: Messages; reduceMotion: boolean;
   highlightComment: number | null; onClose: () => void; onChanged: () => void;
 }) {
   const [task, setTask] = useState<TaskDetail | null>(null);
@@ -458,6 +461,14 @@ function TaskModal({ taskId, users, me, t, reduceMotion, highlightComment, onClo
               <input type="date" value={task.dueDate ? task.dueDate.slice(0, 10) : ""}
                 onChange={(e) => patch("dueDate", e.target.value ? new Date(e.target.value).toISOString() : null)}
                 className="rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-sm text-white [color-scheme:dark]" />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-[var(--ink-mute)]">
+              {t.tasks.fGoal}
+              <select value={task.goalId ?? ""} onChange={(e) => patch("goalId", e.target.value ? Number(e.target.value) : null)}
+                className="max-w-[180px] rounded-lg border border-white/10 bg-black/30 px-2 py-1.5 text-sm text-white">
+                <option value="" className="bg-[#111]">{t.tasks.noGoal}</option>
+                {goals.map((g) => <option key={g.id} value={g.id} className="bg-[#111]">{g.title}</option>)}
+              </select>
             </label>
             <label className="flex min-w-[200px] flex-1 flex-col gap-1 text-xs text-[var(--ink-mute)]">
               {t.tasks.fLabels}
