@@ -669,6 +669,41 @@ export const claudeIdeas = pgTable(
   (t) => [index("claude_ideas_trend_idx").on(t.trendId), index("claude_ideas_status_idx").on(t.status)],
 );
 
+/* ───────────────────────── notifications (Fase 3 del refactor) ─────────────
+ * Bandeja por usuario (usernames de AUTH_USERS). `entityType`/`entityId`
+ * permiten el deep-link (ej. task 12) y `meta` lleva contexto extra como el
+ * comentario a resaltar. DDL aplicado por `npm run app:migrate` (idempotente). */
+
+export const NOTIFICATION_TYPE = [
+  "task_assigned",
+  "task_comment",
+  "task_moved",
+  "goal_update",
+  "system",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPE)[number];
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: serial("id").primaryKey(),
+    userTo: text("user_to").notNull(), // username destino
+    actor: text("actor"), // username que originó el evento (avatar)
+    type: text("type").notNull(), // NotificationType
+    title: text("title").notNull(),
+    body: text("body"),
+    entityType: text("entity_type"), // "task" | "goal" | …
+    entityId: integer("entity_id"),
+    meta: jsonb("meta").$type<Record<string, unknown>>(), // p.ej. { commentId }
+    read: boolean("read").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("notifications_user_read_idx").on(t.userTo, t.read),
+    index("notifications_created_idx").on(t.createdAt),
+  ],
+);
+
 /* ───────────────────────── relations ───────────────────────── */
 
 export const citiesRelations = relations(cities, ({ many }) => ({

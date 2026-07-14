@@ -17,6 +17,7 @@
     "audit": "tsx src/scripts/audit.ts",
     "pipeline": "tsx src/scripts/pipeline.ts",
     "seed:zones": "tsx src/scripts/seed-zones.ts",
+    "app:migrate": "tsx src/scripts/app-migrate.ts",
     "intel:migrate": "tsx src/scripts/intel-migrate.ts",
     "intel:run": "tsx src/scripts/intel-run.ts",
     "tunnel": "cloudflared tunnel --url http://localhost:3000"
