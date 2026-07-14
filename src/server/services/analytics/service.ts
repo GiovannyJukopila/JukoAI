@@ -8,8 +8,15 @@
  */
 import { sql, type SQL } from "drizzle-orm";
 import { db } from "@/server/db/client";
+import { ENABLED_COUNTRIES } from "@/config/features";
 
 const n = (v: unknown) => Number(v ?? 0);
+
+// SQL fragment `'Colombia', 'Malta'` for active-market IN() filters.
+const enabledCountriesSql = sql.join(
+  ENABLED_COUNTRIES.map((c) => sql`${c}`),
+  sql`, `,
+);
 
 export type AnalyticsScopeInput = {
   country?: string | null;
@@ -29,7 +36,7 @@ export async function getAnalytics(scope: AnalyticsScopeInput = {}) {
     if (zoneId != null) return sql`${sql.raw(p)}zone_id = ${zoneId}`;
     if (cityId != null) return sql`${sql.raw(p)}zone_id IN (SELECT id FROM zones WHERE city_id = ${cityId})`;
     if (country) return sql`${sql.raw(p)}country = ${country}`;
-    return sql`TRUE`;
+    return sql`${sql.raw(p)}country IN (${enabledCountriesSql})`;
   };
 
   // ── Scoped KPIs (drive the summary row) ─────────────────────────────────────
@@ -68,7 +75,7 @@ export async function getAnalytics(scope: AnalyticsScopeInput = {}) {
         count(*) FILTER (WHERE audit_status <> 'none')::int AS audited,
         coalesce(round(avg(opportunity_score) FILTER (WHERE audit_status <> 'none')), 0)::int AS avg_score,
         count(*) FILTER (WHERE opportunity_score >= 70)::int AS hot
-      FROM businesses WHERE country IS NOT NULL
+      FROM businesses WHERE country IN (${enabledCountriesSql})
       GROUP BY country ORDER BY total DESC
     `)
   ).rows.map((r) => ({ country: String(r.country), total: n(r.total), audited: n(r.audited), avgScore: n(r.avg_score), hot: n(r.hot) }));
@@ -118,7 +125,7 @@ export async function getAnalytics(scope: AnalyticsScopeInput = {}) {
     zoneId != null ? sql`WHERE z.id = ${zoneId}`
     : cityId != null ? sql`WHERE z.city_id = ${cityId}`
     : country ? sql`WHERE z.country = ${country}`
-    : sql``;
+    : sql`WHERE z.country IN (${enabledCountriesSql})`;
   const zoneLimit = country || cityId != null || zoneId != null ? sql`` : sql`LIMIT 10`;
   const topZones = (
     await db.execute(sql`
@@ -148,12 +155,12 @@ export async function getAnalytics(scope: AnalyticsScopeInput = {}) {
   ).rows.map((r) => ({ issue: String(r.issue), n: n(r.n) }));
 
   // ── Per-country coverage progress (always global — coverage navigator) ──────
-  const planned = (await db.execute(sql`SELECT country, count(*)::int AS total FROM zones WHERE planned GROUP BY country`)).rows;
+  const planned = (await db.execute(sql`SELECT country, count(*)::int AS total FROM zones WHERE planned AND country IN (${enabledCountriesSql}) GROUP BY country`)).rows;
   const covered = (
     await db.execute(sql`
       SELECT z.country, count(DISTINCT z.id)::int AS covered
       FROM zones z JOIN coverage c ON c.zone_id = z.id
-      WHERE c.status IN ('completada','completada_parcial')
+      WHERE c.status IN ('completada','completada_parcial') AND z.country IN (${enabledCountriesSql})
       GROUP BY z.country
     `)
   ).rows;

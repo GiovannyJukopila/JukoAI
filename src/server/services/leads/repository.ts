@@ -6,10 +6,11 @@
  * Postgres' `xmax` system column (0 on a fresh insert) so callers can count new
  * vs refreshed businesses in a single round-trip.
  */
-import { and, desc, eq, gte, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { businesses, audits, notes, zones, cities } from "@/server/db/schema";
 import type { LeadStatus } from "@/server/db/schema";
+import { ENABLED_COUNTRIES } from "@/config/features";
 
 export type BusinessUpsert = {
   placeId: string;
@@ -120,7 +121,8 @@ export type LeadFilters = {
 
 /** Lead table for the dashboard: sorted by opportunity score (desc, nulls last). */
 export async function listLeads(filters: LeadFilters = {}) {
-  const conditions: SQL[] = [];
+  // Active markets only — disabled countries stay in the DB but never surface.
+  const conditions: SQL[] = [inArray(businesses.country, [...ENABLED_COUNTRIES])];
   if (filters.country) conditions.push(eq(businesses.country, filters.country));
   if (filters.cityId) conditions.push(eq(zones.cityId, filters.cityId));
   if (filters.zoneId) conditions.push(eq(businesses.zoneId, filters.zoneId));

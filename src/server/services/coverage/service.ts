@@ -5,11 +5,15 @@
  * Before any scrape we consult the `coverage` ledger and decide what to do, so we
  * never burn Places API quota on a zone+category already covered recently.
  */
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/server/db/client";
 import { cities, zones, coverage, businesses as businessesTbl } from "@/server/db/schema";
 import type { CoverageStatus } from "@/server/db/schema";
 import { env } from "@/server/config/env";
+import { ENABLED_COUNTRIES } from "@/config/features";
+
+// Active-market filter (readonly → mutable copy for drizzle's inArray).
+const enabledCountries = [...ENABLED_COUNTRIES];
 
 export type CoverageDecisionAction =
   | "run" // no record, or pendiente, or forced → execute the scrape
@@ -316,6 +320,7 @@ export async function listCoverage() {
       .from(coverage)
       .innerJoin(zones, eq(coverage.zoneId, zones.id))
       .innerJoin(cities, eq(zones.cityId, cities.id))
+      .where(inArray(zones.country, enabledCountries))
       .orderBy(zones.country, cities.name, zones.name, coverage.category),
     db
       .select({
@@ -357,7 +362,7 @@ export async function getCountryProgress() {
   const plannedRows = await db
     .select({ country: zones.country, total: sql<number>`count(*)` })
     .from(zones)
-    .where(eq(zones.planned, true))
+    .where(and(eq(zones.planned, true), inArray(zones.country, enabledCountries)))
     .groupBy(zones.country);
 
   const coveredRows = await db
@@ -367,7 +372,7 @@ export async function getCountryProgress() {
     })
     .from(zones)
     .innerJoin(coverage, eq(coverage.zoneId, zones.id))
-    .where(sql`${coverage.status} in ('completada','completada_parcial')`)
+    .where(and(sql`${coverage.status} in ('completada','completada_parcial')`, inArray(zones.country, enabledCountries)))
     .groupBy(zones.country);
 
   const coveredMap = new Map(coveredRows.map((r) => [r.country, Number(r.covered)]));
@@ -386,6 +391,7 @@ export async function listZones() {
     .select({ id: zones.id, country: zones.country, cityId: zones.cityId, city: cities.name, name: zones.name })
     .from(zones)
     .innerJoin(cities, eq(zones.cityId, cities.id))
+    .where(inArray(zones.country, enabledCountries))
     .orderBy(zones.country, cities.name, zones.name);
 }
 
@@ -394,6 +400,7 @@ export async function listCities() {
   return db
     .select({ id: cities.id, country: cities.country, name: cities.name })
     .from(cities)
+    .where(inArray(cities.country, enabledCountries))
     .orderBy(cities.country, cities.name);
 }
 

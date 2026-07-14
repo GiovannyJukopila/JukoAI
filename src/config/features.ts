@@ -16,3 +16,11 @@
  *    also covers the CLI scripts `npm run scrape|audit|pipeline`).
  */
 export const ENABLE_BUSINESS_AUDIT: boolean = false;
+
+/**
+ * Active markets. Countries not on this list disappear from every dropdown,
+ * navigator and listing — the rows stay untouched in the database, they are
+ * only filtered out server-side. Values must match the `country` text stored
+ * in `cities` / `zones` / `businesses` (Spanish names, e.g. "Colombia").
+ */
+export const ENABLED_COUNTRIES: readonly string[] = ["Colombia", "Malta"];
