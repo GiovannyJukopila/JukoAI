@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { apiGet } from "../_lib";
 import { UserMenu } from "./UserMenu";
+import { NotificationBell } from "./NotificationBell";
 import { useLang, type Lang } from "../_i18n";
 import { ENABLE_OPERATIONS, ENABLE_CONTENT_INTEL } from "@/config/features";
 
@@ -126,6 +127,7 @@ export function AppChrome({ user, showChrome, children }: { user: string | null;
             </div>
             <div className="pa-topbar__spacer" />
             <div className="pa-topbar__actions">
+              <NotificationBell />
               <div className="pa-lang" role="group" aria-label="Idioma / Language">
                 {(["es", "en"] as const).map((l) => (
                   <button key={l} onClick={() => setLang(l)} className={lang === l ? "is-active" : ""} aria-pressed={lang === l}>

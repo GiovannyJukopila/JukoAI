@@ -11,6 +11,21 @@ export type Lang = "es" | "en";
 
 const es = {
   nav: { leads: "Negocios", coverage: "Cobertura", operations: "Operaciones", intel: "Content Intel", logout: "Salir" },
+  notif: {
+    title: "Notificaciones",
+    aria: "Notificaciones",
+    empty: "Nada por aquí todavía.",
+    emptySub: "Aquí verás tareas asignadas, comentarios y cambios en goals.",
+    markAll: "Marcar todas",
+    unreadN: (n: number) => `${n} sin leer`,
+    today: "Hoy",
+    yesterday: "Ayer",
+    earlier: "Anteriores",
+    justNow: "ahora",
+    minAgo: (n: number) => `hace ${n} min`,
+    hoursAgo: (n: number) => `hace ${n} h`,
+    daysAgo: (n: number) => `hace ${n} d`,
+  },
   login: {
     subtitle: "Inicia sesión para acceder al panel.",
     user: "Usuario",
@@ -315,6 +330,21 @@ const es = {
 
 const en: typeof es = {
   nav: { leads: "Businesses", coverage: "Coverage", operations: "Operations", intel: "Content Intel", logout: "Log out" },
+  notif: {
+    title: "Notifications",
+    aria: "Notifications",
+    empty: "Nothing here yet.",
+    emptySub: "Assigned tasks, comments and goal changes will show up here.",
+    markAll: "Mark all read",
+    unreadN: (n: number) => `${n} unread`,
+    today: "Today",
+    yesterday: "Yesterday",
+    earlier: "Earlier",
+    justNow: "just now",
+    minAgo: (n: number) => `${n} min ago`,
+    hoursAgo: (n: number) => `${n} h ago`,
+    daysAgo: (n: number) => `${n} d ago`,
+  },
   login: {
     subtitle: "Sign in to access the panel.",
     user: "Username",
