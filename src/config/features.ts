@@ -27,6 +27,15 @@ export const ENABLE_OPERATIONS: boolean = false;
 export const ENABLE_CONTENT_INTEL: boolean = false;
 
 /**
+ * Usuarios que pueden disparar el Refresh del Radar IA. El refresh ejecuta
+ * `claude -p` con la suscripción Pro del dueño y solo funciona en la máquina
+ * donde el CLI está logueado — el resto de usuarios ve el último escaneo
+ * cacheado (el botón se oculta y el endpoint devuelve 403).
+ * "dev" = fallback cuando el login está desactivado en local.
+ */
+export const RADAR_REFRESH_USERS: readonly string[] = ["giovannyjukopila", "dev"];
+
+/**
  * Active markets. Countries not on this list disappear from every dropdown,
  * navigator and listing — the rows stay untouched in the database, they are
  * only filtered out server-side. Values must match the `country` text stored

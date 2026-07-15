@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { apiGet, apiSend } from "../_lib";
 import { useLang } from "../_i18n";
+import { RADAR_REFRESH_USERS } from "@/config/features";
 
 type RadarItem = {
   id: number; topic: string; source: string; title: string; summary: string | null;
@@ -49,11 +50,17 @@ export default function RadarPage() {
   const [error, setError] = useState<string | null>(null);
   const [fSource, setFSource] = useState("");
   const [fTopic, setFTopic] = useState("");
+  const [me, setMe] = useState<string | null>(null);
+  // El refresh consume la suscripción Claude del admin: solo él ve el botón.
+  const canRefresh = me != null && RADAR_REFRESH_USERS.includes(me);
 
   const load = useCallback(async () => {
     try { setData(await apiGet<Resp>("/api/prospect/radar")); } catch { /* transient */ }
   }, []);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    apiGet<{ me: string | null }>("/api/prospect/users").then((d) => setMe(d.me)).catch(() => {});
+  }, [load]);
 
   async function refresh() {
     setScanning(true);
@@ -89,7 +96,7 @@ export default function RadarPage() {
               {t.radar.lastUpdate(timeAgo(data.run.finishedAt))}
             </span>
           )}
-          <button onClick={refresh} disabled={scanning}
+          {canRefresh && <button onClick={refresh} disabled={scanning}
             className="group inline-flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--violet)] px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-[var(--violet)]/25 transition-opacity hover:opacity-90 disabled:opacity-60">
             {/* Barrido de radar: gira mientras escanea */}
             <motion.span
@@ -102,7 +109,7 @@ export default function RadarPage() {
               </svg>
             </motion.span>
             {scanning ? t.radar.refreshing : t.radar.refresh}
-          </button>
+          </button>}
         </div>
       </div>
 
