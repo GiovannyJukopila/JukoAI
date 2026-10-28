@@ -9,6 +9,7 @@ import { ArrowUpRight, BoltIcon, Check, PillarIcon, type PillarName } from "./ic
 import { QuoteButton } from "./QuoteButton";
 import { LogoLoader } from "./LogoLoader";
 import { ramp } from "./scroll/ramp";
+import { useIntroDone } from "@/lib/intro";
 
 // three.js only loads in the browser and in its own chunk, after the headline has painted.
 const AppBuilder3D = dynamic(() => import("./ui/app-builder-3d"), {
@@ -22,9 +23,10 @@ const lineVariants = {
   hidden: { y: "110%" },
   show: (i: number) => ({ y: "0%", transition: { duration: 1, ease, delay: 0.15 + i * 0.1 } }),
 };
-const fadeUp = (delay: number) => ({
+// the entrance waits for the first-visit intro (it plays right away when there is none)
+const fadeUp = (delay: number, go: boolean) => ({
   initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
+  animate: go ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 },
   transition: { duration: 0.8, ease, delay },
 });
 
@@ -36,6 +38,7 @@ export function Hero({ locale }: { locale: Locale }) {
   const dict = getDict(locale);
   const h = dict.hero;
   const reduce = useReducedMotion();
+  const go = useIntroDone();
   const home = `/${locale}`;
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -59,7 +62,7 @@ export function Hero({ locale }: { locale: Locale }) {
 
       <div className="hero__grid">
         <div className="hero__inner">
-          <motion.span className="hero__badge" {...(reduce ? {} : fadeUp(0.05))}>
+          <motion.span className="hero__badge" {...(reduce ? {} : fadeUp(0.05, go))}>
             <span className="dot" />
             {h.badge}
           </motion.span>
@@ -72,7 +75,7 @@ export function Hero({ locale }: { locale: Locale }) {
                   custom={i}
                   variants={lineVariants}
                   initial={reduce ? false : "hidden"}
-                  animate="show"
+                  animate={go ? "show" : "hidden"}
                 >
                   {line}
                 </motion.span>
@@ -80,15 +83,15 @@ export function Hero({ locale }: { locale: Locale }) {
             ))}
           </h1>
 
-          <motion.div className="hero__actions" {...(reduce ? {} : fadeUp(0.6))}>
+          <motion.div className="hero__actions" {...(reduce ? {} : fadeUp(0.6, go))}>
             <Link href={`${home}#contact`} className="btn btn--lg">{h.cta1} <ArrowUpRight /></Link>
             <QuoteButton className="btn btn--ghost btn--lg hero__quote"><BoltIcon size={15} />{h.cta2}</QuoteButton>
           </motion.div>
-          <motion.p className="hero__promise" {...(reduce ? {} : fadeUp(0.68))}>
+          <motion.p className="hero__promise" {...(reduce ? {} : fadeUp(0.68, go))}>
             {h.promise.map((p) => <span key={p}><Check size={13} />{p}</span>)}
           </motion.p>
 
-          <motion.ul className="hero__pillars" {...(reduce ? {} : fadeUp(0.75))}>
+          <motion.ul className="hero__pillars" {...(reduce ? {} : fadeUp(0.75, go))}>
             {h.pillars.map((p, i) => (
               <li key={p}><span><PillarIcon name={PILLAR_ICONS[i]} /></span>{p}</li>
             ))}

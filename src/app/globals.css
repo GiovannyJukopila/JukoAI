@@ -871,6 +871,57 @@ ul { list-style:none; margin:0; padding:0; }
   .faq__a { padding-right:.4rem; }
 }
 
+/* ---------- First-visit intro (components/IntroLoader) ----------
+   The J draws itself, fills, the dot drops in; "Juko AI" rises; a counter measures the real load;
+   then an iris opens from the dot of the J. Pure CSS until the exit, so it plays from the first paint. */
+@property --iris { syntax:"<length>"; inherits:false; initial-value:0px; }
+html.intro-on { overflow:hidden; }
+html.intro-skip .intro { display:none; }
+.intro { --ix:50%; --iy:50%; position:fixed; inset:0; z-index:1000; display:grid; place-items:center; color:var(--ink);
+  background:radial-gradient(55% 45% at 50% 46%, rgba(119,82,254,.18), transparent 70%), radial-gradient(30% 30% at 50% 50%, rgba(92,232,168,.06), transparent 70%), var(--bg);
+  -webkit-mask:radial-gradient(circle at var(--ix) var(--iy), transparent var(--iris), #000 calc(var(--iris) + 1px));
+  mask:radial-gradient(circle at var(--ix) var(--iy), transparent var(--iris), #000 calc(var(--iris) + 1px));
+  /* never trap a visitor whose JavaScript fails */
+  animation:introFailsafe .5s ease 7s forwards; }
+.intro__center { display:flex; flex-direction:column; align-items:center; gap:1.25rem; }
+.intro__mark { width:clamp(78px,8.6vw,112px); height:auto; overflow:visible; filter:drop-shadow(0 18px 40px rgba(119,82,254,.35)); }
+.intro__stroke path { stroke-dasharray:1; stroke-dashoffset:1; animation:introDraw 1.1s cubic-bezier(.65,0,.35,1) .1s forwards; }
+.intro__stroke { animation:introOut .5s ease 1.2s forwards; }
+.intro__fill { opacity:0; animation:introIn .7s ease .8s forwards; }
+.intro__dot { opacity:0; transform-box:fill-box; transform-origin:50% 100%; animation:introDot .75s cubic-bezier(.34,1.4,.64,1) .95s forwards; }
+.intro__word { display:flex; align-items:baseline; overflow:hidden; padding:.1em .05em; font-family:var(--font-display); font-size:clamp(1.7rem,2.6vw,2.3rem); font-weight:600; letter-spacing:-.025em; line-height:1; }
+.intro__word span, .intro__word b { display:inline-block; transform:translateY(115%); animation:introRise .75s cubic-bezier(.22,1,.36,1) forwards; animation-delay:calc(1.05s + var(--i) * 55ms); }
+.intro__word b { margin-left:.14em; font-weight:700; color:var(--peri); }
+.intro__tag { opacity:0; font-family:var(--font-neo-mono),ui-monospace,Menlo,monospace; font-size:.68rem; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-mute); animation:introIn .7s ease 1.45s forwards; }
+.intro__status { position:absolute; left:clamp(1.1rem,4vw,3rem); bottom:clamp(1.4rem,5vh,2.8rem); display:flex; flex-direction:column; gap:.15rem;
+  font-family:var(--font-neo-mono),ui-monospace,Menlo,monospace; font-size:.68rem; letter-spacing:.06em; color:var(--ink-mute); opacity:0; animation:introIn .6s ease .3s forwards; }
+.intro__status > span:first-child { margin-bottom:.35rem; color:var(--ink-soft); }
+.intro__line { display:flex; align-items:baseline; width:13.5rem; }
+.intro__line i { flex:1; margin:0 .55em; border-bottom:1px dotted currentColor; opacity:.35; transform:translateY(-.25em); }
+.intro__status b { font-weight:500; color:#5ce8a8; }
+.intro__status em { font-style:normal; color:var(--peri); animation:introBlink 1s steps(2) infinite; }
+.intro__count { position:absolute; right:clamp(1.1rem,4vw,3rem); bottom:clamp(1.1rem,4vh,2.4rem); font-family:var(--font-display); font-size:clamp(2.6rem,5vw,4.4rem); font-weight:300; line-height:1;
+  letter-spacing:-.04em; font-variant-numeric:tabular-nums; color:var(--ink-soft); opacity:0; animation:introIn .6s ease .3s forwards; }
+.intro__bar { position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--border); }
+.intro__bar b { display:block; height:100%; transform:scaleX(0); transform-origin:0 50%; background:linear-gradient(90deg,#80ffdb,#45bde3 45%,#7752fe); box-shadow:0 0 14px rgba(119,82,254,.7); }
+/* exit: the iris opens from the dot while the mark lifts and the HUD slips away */
+.intro.is-leaving { --iris:170vmax; transition:--iris 1.1s cubic-bezier(.76,0,.24,1) .12s, opacity .4s ease .95s; opacity:0; }
+.intro.is-leaving .intro__center { opacity:0; transform:scale(1.12); transition:transform 1s cubic-bezier(.22,1,.36,1), opacity .45s ease .12s; }
+.intro.is-leaving .intro__status, .intro.is-leaving .intro__count, .intro.is-leaving .intro__bar { opacity:0; transform:translateY(10px); transition:opacity .35s ease, transform .35s ease; }
+@keyframes introDraw { to { stroke-dashoffset:0; } }
+@keyframes introIn { to { opacity:1; } }
+@keyframes introOut { to { opacity:0; } }
+@keyframes introRise { to { transform:translateY(0); } }
+@keyframes introDot { 0% { opacity:0; transform:translateY(-170px) scale(.55); } 55% { opacity:1; transform:translateY(0) scale(1.12,.88); } 78% { transform:translateY(-14px) scale(.97,1.03); } 100% { opacity:1; transform:none; } }
+@keyframes introBlink { 50% { opacity:.2; } }
+@keyframes introFailsafe { to { opacity:0; visibility:hidden; } }
+/* the chrome of the page enters right after the intro */
+html.intro-on .nav, html.intro-on .wa-fab { opacity:0; }
+html.intro-done .nav { animation:introNav .9s cubic-bezier(.22,1,.36,1) .25s both; }
+html.intro-done .wa-fab { animation:introFab .8s cubic-bezier(.34,1.4,.64,1) .9s both; }
+@keyframes introNav { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:none; } }
+@keyframes introFab { from { opacity:0; transform:scale(.6); } to { opacity:1; transform:none; } }
+
 /* ---------- Logo loader: the Juko mark with a turning ring (components/LogoLoader) ---------- */
 .logo-loader { display:inline-flex; flex:none; flex-direction:column; align-items:center; justify-content:center; gap:.9rem; line-height:0; }
 .logo-loader svg { display:block; overflow:visible; }

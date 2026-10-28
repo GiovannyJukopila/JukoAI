@@ -860,6 +860,9 @@ function initBuilderScene(root: HTMLElement, copy: Copy, fontFamily: string): ()
       if (!ready) {
         ready = true
         root.classList.add('is-ready')
+        // the first-visit intro waits for this to count the page as loaded
+        window.__jukoHeroReady = true
+        window.dispatchEvent(new Event('juko:hero-ready'))
       }
     }
     raf = requestAnimationFrame(frame)
