@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "./icons";
+import { ThemeToggle } from "./ThemeToggle";
+import { openQuote } from "@/lib/quote";
 import { getDict, locales, type Locale } from "@/lib/i18n";
 
 export function Nav({ locale }: { locale: Locale }) {
@@ -68,7 +70,8 @@ export function Nav({ locale }: { locale: Locale }) {
               </span>
             ))}
           </div>
-          <Link href={`${home}#contact`} className="btn btn--sm">{dict.nav.cta}</Link>
+          <ThemeToggle t={dict.theme} />
+          <button type="button" className="btn btn--sm" onClick={() => openQuote()}>{dict.nav.cta}</button>
           <button
             className={`nav__burger${open ? " is-open" : ""}`}
             aria-label="Menú"
@@ -84,7 +87,7 @@ export function Nav({ locale }: { locale: Locale }) {
         {links.map((l) => (
           <Link key={l.href} href={l.href} onClick={() => setOpen(false)}>{l.label}</Link>
         ))}
-        <Link href={`${home}#contact`} className="btn" onClick={() => setOpen(false)}>{dict.nav.cta}</Link>
+        <button type="button" className="btn" onClick={() => { setOpen(false); openQuote(); }}>{dict.nav.cta}</button>
       </div>
     </>
   );

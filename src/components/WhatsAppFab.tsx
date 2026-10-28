@@ -1,13 +1,17 @@
-import { SOCIAL } from "@/lib/content";
+"use client";
+
+import { useWhatsApp } from "@/lib/region";
 
 export function WhatsAppFab() {
+  // the Latin American number for visitors there, the international one for everyone else
+  const wa = useWhatsApp();
   return (
     <a
-      href={SOCIAL.whatsapp}
+      href={wa.url}
       target="_blank"
       rel="noopener noreferrer"
       className="wa-fab"
-      aria-label="Contactar por WhatsApp (+57 3005120188)"
+      aria-label={`WhatsApp (${wa.label})`}
     >
       <span className="wa-fab__ring" aria-hidden="true" />
       <svg viewBox="0 0 32 32" width="30" height="30" fill="currentColor" aria-hidden="true">

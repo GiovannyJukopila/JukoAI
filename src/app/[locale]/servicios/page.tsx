@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { pageMetadata } from "@/lib/seo";
 import { getDict, isLocale, locales, type Locale } from "@/lib/i18n";
-import { SERVICES, SOCIAL } from "@/lib/content";
+import { SERVICES } from "@/lib/content";
 import { Reveal } from "@/components/Reveal";
-import { ServiceGlyph, ArrowUpRight } from "@/components/icons";
+import { ServiceGlyph, ArrowUpRight, BoltIcon } from "@/components/icons";
+import { QuoteButton } from "@/components/QuoteButton";
+import { WhatsAppLink } from "@/components/WhatsAppLink";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -12,8 +15,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const lc = isLocale(locale) ? locale : "es";
-  return { title: getDict(lc).nav.services };
+  const lc: Locale = isLocale(locale) ? locale : "es";
+  const seo = getDict(lc).seo;
+  return pageMetadata({ locale: lc, path: "/servicios", title: seo.servicesTitle, description: seo.servicesDesc });
 }
 
 export default async function ServicesIndex({ params }: { params: Promise<{ locale: string }> }) {
@@ -52,9 +56,10 @@ export default async function ServicesIndex({ params }: { params: Promise<{ loca
           <h2 className="contact__title">{dict.contact.title}</h2>
           <p className="contact__sub">{dict.contact.sub}</p>
           <div className="contact__actions">
-            <Link href={`/${lc}#contact`} className="btn btn--lg">{dict.serviceDetail.cta}</Link>
-            <a href={SOCIAL.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn--ghost btn--lg">{dict.contact.wa}</a>
+            <QuoteButton className="btn btn--lg"><BoltIcon size={15} />{dict.quote.cta}</QuoteButton>
+            <WhatsAppLink className="btn btn--ghost btn--lg">{dict.contact.wa}</WhatsAppLink>
           </div>
+          <p className="cta-promise">{dict.quote.promise}</p>
         </Reveal>
       </section>
     </>

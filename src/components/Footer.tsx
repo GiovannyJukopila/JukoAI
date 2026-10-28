@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LogoMark } from "./icons";
 import { getDict, type Locale } from "@/lib/i18n";
 import { SOCIAL } from "@/lib/content";
+import { WhatsAppLink } from "./WhatsAppLink";
 
 export function Footer({ locale }: { locale: Locale }) {
   const dict = getDict(locale);
@@ -22,7 +23,7 @@ export function Footer({ locale }: { locale: Locale }) {
           <Link href={`/${locale}/proyectos`}>{dict.nav.work}</Link>
           <a href={SOCIAL.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
           <a href={SOCIAL.github} target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a href={SOCIAL.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <WhatsAppLink>WhatsApp</WhatsAppLink>
         </div>
       </div>
       <div className="footer__bottom">

@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { pageMetadata, serviceLd, breadcrumbLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import { getDict, isLocale, locales, type Locale } from "@/lib/i18n";
-import { SERVICES, getService, SOCIAL } from "@/lib/content";
+import { SERVICES, getService } from "@/lib/content";
 import { Reveal } from "@/components/Reveal";
-import { ServiceGlyph, ArrowLeft, ArrowUpRight, Check } from "@/components/icons";
+import { ServiceGlyph, ArrowLeft, ArrowUpRight, BoltIcon, Check } from "@/components/icons";
+import { QuoteButton } from "@/components/QuoteButton";
+import { WhatsAppLink } from "@/components/WhatsAppLink";
 
 export function generateStaticParams() {
   return locales.flatMap((locale) => SERVICES.map((s) => ({ locale, slug: s.slug })));
@@ -12,10 +16,10 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const lc = isLocale(locale) ? locale : "es";
+  const lc: Locale = isLocale(locale) ? locale : "es";
   const service = getService(slug);
   if (!service) return {};
-  return { title: service.title[lc], description: service.short[lc] };
+  return pageMetadata({ locale: lc, path: `/servicios/${slug}`, title: service.title[lc], description: service.short[lc] });
 }
 
 export default async function ServiceDetail({ params }: { params: Promise<{ locale: string; slug: string }> }) {
@@ -30,6 +34,10 @@ export default async function ServiceDetail({ params }: { params: Promise<{ loca
 
   return (
     <>
+      <JsonLd data={[
+        serviceLd(service, lc),
+        breadcrumbLd([{ name: "Juko AI", path: `/${lc}` }, { name: dict.nav.services, path: `/${lc}/servicios` }, { name: service.title[lc], path: `/${lc}/servicios/${service.slug}` }]),
+      ]} />
       <div className="page-head">
         <Reveal>
           <Link href={`/${lc}/servicios`} className="back-link"><ArrowLeft /> {dict.serviceDetail.others}</Link>
@@ -69,10 +77,11 @@ export default async function ServiceDetail({ params }: { params: Promise<{ loca
             </div>
             <div className="detail-card">
               <h4>{dict.serviceDetail.cta}</h4>
-              <p style={{ color: "var(--ink-soft)", fontSize: ".95rem", marginBottom: "1.3rem" }}>{dict.contact.sub}</p>
+              <p style={{ color: "var(--ink-soft)", fontSize: ".95rem", marginBottom: ".5rem" }}>{dict.contact.sub}</p>
+              <p className="cta-promise" style={{ margin: "0 0 1.2rem", textAlign: "left" }}>{dict.quote.promise}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: ".7rem" }}>
-                <Link href={`/${lc}#contact`} className="btn">{dict.projectDetail.contactCta}</Link>
-                <a href={SOCIAL.whatsapp} target="_blank" rel="noopener noreferrer" className="btn btn--ghost">{dict.contact.wa}</a>
+                <QuoteButton className="btn"><BoltIcon size={15} />{dict.quote.cta}</QuoteButton>
+                <WhatsAppLink className="btn btn--ghost">{dict.contact.wa}</WhatsAppLink>
               </div>
             </div>
           </Reveal>

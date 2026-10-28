@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { locales, defaultLocale } from "@/lib/i18n";
 import { SESSION_COOKIE, verifySession } from "@/server/auth/session";
+import { REGION_COOKIE, regionFromCountry } from "@/lib/region-data";
 
 function detectLocale(req: NextRequest): string {
   const header = req.headers.get("accept-language") ?? "";
@@ -9,14 +10,21 @@ function detectLocale(req: NextRequest): string {
 }
 
 /**
- * Auth gate for the internal tool. Active only when AUTH_USERS + AUTH_SECRET are
- * configured (so local dev stays open). The login page and the auth endpoints are
- * exempt. Unauthenticated requests → login redirect (pages) or 401 (API).
+ * Auth gate for the internal tool. Without AUTH_USERS + AUTH_SECRET it stays open only in
+ * local dev; a production deployment without them hides the tool and its API (404), so a
+ * missing variable can never expose the leads data or spend the Anthropic / Google keys.
+ * The login page and the auth endpoints are exempt. Unauthenticated requests → login
+ * redirect (pages) or 401 (API).
  */
 async function guardProspect(req: NextRequest): Promise<NextResponse> {
   const users = process.env.AUTH_USERS;
   const secret = process.env.AUTH_SECRET;
-  if (!users || !secret) return NextResponse.next(); // auth disabled
+  if (!users || !secret) {
+    if (process.env.NODE_ENV !== "production") return NextResponse.next(); // local dev
+    return req.nextUrl.pathname.startsWith("/api/")
+      ? NextResponse.json({ error: "Not found" }, { status: 404 })
+      : new NextResponse("Not found", { status: 404 });
+  }
 
   const { pathname } = req.nextUrl;
   if (pathname === "/prospect/login" || pathname.startsWith("/api/prospect/auth/")) {
@@ -35,6 +43,21 @@ async function guardProspect(req: NextRequest): Promise<NextResponse> {
   return NextResponse.redirect(url);
 }
 
+/**
+ * The visitor's region for the WhatsApp number (lib/region.ts), from the country the hosting
+ * network adds to the request (Vercel, Cloudflare). No geo API, no keys; without the header the
+ * browser falls back to the device time zone.
+ */
+function withRegion(req: NextRequest, res: NextResponse): NextResponse {
+  const country = req.headers.get("x-vercel-ip-country") ?? req.headers.get("cf-ipcountry") ?? req.headers.get("x-country-code");
+  if (!country || country === "XX") return res;
+  const region = regionFromCountry(country);
+  if (req.cookies.get(REGION_COOKIE)?.value !== region) {
+    res.cookies.set(REGION_COOKIE, region, { path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax" });
+  }
+  return res;
+}
+
 export async function proxy(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl;
 
@@ -45,7 +68,7 @@ export async function proxy(req: NextRequest): Promise<NextResponse> {
 
   // Marketing site → locale handling.
   const hasLocale = locales.some((l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`));
-  if (hasLocale) return NextResponse.next();
+  if (hasLocale) return withRegion(req, NextResponse.next());
 
   const locale = detectLocale(req);
   const url = req.nextUrl.clone();
