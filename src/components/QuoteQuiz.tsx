@@ -249,7 +249,7 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
             transition={{ duration: 0.45, ease }}
           >
             <header className="quiz__head">
-              <span className="quiz__badge"><BoltIcon size={13} />{q.title}</span>
+              <span className="quiz__badge"><BoltIcon size={13} /><span className="quiz__badge-text">{q.title}</span></span>
               {asking && <span className="quiz__count">{q.step} {step + 1} {q.of} {STEPS}</span>}
               <button type="button" className="quiz__close" onClick={close} aria-label={q.close} disabled={phase === "sending"}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>

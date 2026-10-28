@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { isLiteMotion } from "@/lib/motion-lite";
 
 // star tints: mostly white/sky, a few brand violet — reads as a real starfield
 const TINTS = [
@@ -9,8 +10,24 @@ const TINTS = [
   [255, 255, 255],
   [142, 143, 250],
 ];
+const LINK_RGB = [142, 143, 250];
 
-type Star = { x: number; y: number; r: number; vx: number; vy: number; a: number; ph: number; tw: number; c: number[] };
+// The light theme used to recolor the canvas with `filter: invert(1) hue-rotate(180deg) saturate(1.4)`,
+// which re-ran over the whole screen on every frame. The same recoloring, done once per tint.
+function lightTint([r, g, b]: number[]) {
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  const apply = (m: number[], c: number[]) => [0, 1, 2].map((i) => clamp(m[i * 3] * c[0] + m[i * 3 + 1] * c[1] + m[i * 3 + 2] * c[2]));
+  const s = 1.4;
+  const hue = [-0.574, 1.43, 0.144, 0.426, 0.43, 0.144, 0.426, 1.43, -0.856]; // hue-rotate(180deg)
+  const sat = [0.213 + 0.787 * s, 0.715 - 0.715 * s, 0.072 - 0.072 * s, 0.213 - 0.213 * s, 0.715 + 0.285 * s, 0.072 - 0.072 * s, 0.213 - 0.213 * s, 0.715 - 0.715 * s, 0.072 + 0.928 * s];
+  return apply(sat, apply(hue, [1 - r / 255, 1 - g / 255, 1 - b / 255])).map((v) => Math.round(v * 255));
+}
+const METEOR_HEAD = [214, 228, 255];
+const METEOR_CORE = [230, 238, 255];
+const DARK = { tints: TINTS, link: LINK_RGB, head: METEOR_HEAD, core: METEOR_CORE };
+const LIGHT = { tints: TINTS.map(lightTint), link: lightTint(LINK_RGB), head: lightTint(METEOR_HEAD), core: lightTint(METEOR_CORE) };
+
+type Star = { x: number; y: number; r: number; vx: number; vy: number; a: number; ph: number; tw: number; c: number };
 type Meteor = { x: number; y: number; vx: number; vy: number; len: number; w: number; life: number; max: number };
 
 const LINK = 116; // max distance for constellation links
@@ -26,11 +43,14 @@ export function Particles() {
     if (!ctx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // touch devices draw every other frame: the drift is slow enough that 30 fps reads the same
+    const minFrame = isLiteMotion() ? 1000 / 30 - 2 : 0;
     // a soft starfield doesn't need full retina density — cap fill rate for cheaper paints
     let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     let stars: Star[] = [];
     let meteors: Meteor[] = [];
-    let raf = 0;
+    let raf = 0, last = 0;
+    let pal = document.documentElement.dataset.theme === "light" ? LIGHT : DARK;
 
     const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -49,12 +69,16 @@ export function Particles() {
       };
     };
 
-    const build = () => {
+    const fit = () => {
       w = canvas.clientWidth;
       h = canvas.clientHeight;
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const build = () => {
+      fit();
       const count = Math.min(90, Math.round((w * h) / 22000));
       stars = Array.from({ length: count }, () => {
         const depth = rand(0.3, 1); // parallax depth
@@ -67,14 +91,20 @@ export function Particles() {
           a: rand(0.25, 0.9) * (0.4 + depth * 0.6),
           ph: Math.random() * Math.PI * 2,
           tw: rand(0.6, 1.6),
-          c: TINTS[Math.floor(Math.random() * TINTS.length)],
+          c: Math.floor(Math.random() * TINTS.length),
         };
       });
       meteors = [];
     };
 
     const draw = (t: number) => {
+      if (!reduce) raf = requestAnimationFrame(draw);
+      if (last && t - last < minFrame) return;
+      // movement is tuned per 60 fps frame; scale it to the time that really passed
+      const k = last ? Math.min(3, (t - last) / (1000 / 60)) : 1;
+      last = t;
       ctx.clearRect(0, 0, w, h);
+      const [lr, lg, lb] = pal.link;
 
       // constellation links (faint, only near neighbours)
       for (let i = 0; i < stars.length; i++) {
@@ -86,7 +116,7 @@ export function Particles() {
           if (d2 < LINK2) {
             const alpha = (1 - d2 / LINK2) * 0.11;
             if (alpha < 0.012) continue;
-            ctx.strokeStyle = `rgba(142,143,250,${alpha})`;
+            ctx.strokeStyle = `rgba(${lr},${lg},${lb},${alpha})`;
             ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -99,14 +129,14 @@ export function Particles() {
       // stars
       for (const s of stars) {
         if (!reduce) {
-          s.x += s.vx; s.y += s.vy;
+          s.x += s.vx * k; s.y += s.vy * k;
           if (s.y < -6) { s.y = h + 6; s.x = Math.random() * w; }
           else if (s.y > h + 6) s.y = -6;
           if (s.x < -6) s.x = w + 6;
           else if (s.x > w + 6) s.x = -6;
         }
         const twinkle = reduce ? 1 : 0.55 + 0.45 * Math.sin(t * 0.001 * s.tw + s.ph);
-        const [r, g, b] = s.c;
+        const [r, g, b] = pal.tints[s.c];
         // soft glow
         ctx.beginPath();
         ctx.fillStyle = `rgba(${r},${g},${b},${s.a * twinkle * 0.22})`;
@@ -124,14 +154,14 @@ export function Particles() {
         if (meteors.length < 2 && Math.random() < 0.012) meteors.push(spawnMeteor());
         for (let i = meteors.length - 1; i >= 0; i--) {
           const m = meteors[i];
-          m.x += m.vx; m.y += m.vy; m.life++;
+          m.x += m.vx * k; m.y += m.vy * k; m.life += k;
           const fade = Math.min(1, m.life / 12) * Math.max(0, 1 - m.life / m.max);
           const tx = m.x - m.vx * m.len;
           const ty = m.y - m.vy * m.len;
           const grad = ctx.createLinearGradient(m.x, m.y, tx, ty);
-          grad.addColorStop(0, `rgba(214,228,255,${0.85 * fade})`);
-          grad.addColorStop(0.4, `rgba(142,143,250,${0.35 * fade})`);
-          grad.addColorStop(1, "rgba(142,143,250,0)");
+          grad.addColorStop(0, `rgba(${pal.head},${0.85 * fade})`);
+          grad.addColorStop(0.4, `rgba(${pal.link},${0.35 * fade})`);
+          grad.addColorStop(1, `rgba(${pal.link},0)`);
           ctx.strokeStyle = grad;
           ctx.lineWidth = m.w;
           ctx.lineCap = "round";
@@ -140,31 +170,44 @@ export function Particles() {
           ctx.lineTo(tx, ty);
           ctx.stroke();
           ctx.beginPath();
-          ctx.fillStyle = `rgba(230,238,255,${fade})`;
+          ctx.fillStyle = `rgba(${pal.core},${fade})`;
           ctx.arc(m.x, m.y, m.w * 0.9, 0, Math.PI * 2);
           ctx.fill();
           if (m.life > m.max || m.y > h + 40 || m.x < -40) meteors.splice(i, 1);
         }
       }
-
-      if (!reduce) raf = requestAnimationFrame(draw);
     };
 
     build();
     if (reduce) draw(0);
     else raf = requestAnimationFrame(draw);
 
+    // A phone's address bar showing or hiding changes only the height: keep the same stars then
+    // (a new random field on every scroll direction change reads as a flicker).
     let resizeT: ReturnType<typeof setTimeout>;
     const onResize = () => {
       clearTimeout(resizeT);
-      resizeT = setTimeout(() => { dpr = Math.min(window.devicePixelRatio || 1, 1.5); build(); }, 200);
+      resizeT = setTimeout(() => {
+        const sameWidth = canvas.clientWidth === w;
+        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        if (sameWidth) fit();
+        else build();
+        if (reduce) draw(0);
+      }, 200);
     };
     window.addEventListener("resize", onResize);
+
+    const themeWatch = new MutationObserver(() => {
+      pal = document.documentElement.dataset.theme === "light" ? LIGHT : DARK;
+      if (reduce) draw(0);
+    });
+    themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
       clearTimeout(resizeT);
+      themeWatch.disconnect();
     };
   }, []);
 

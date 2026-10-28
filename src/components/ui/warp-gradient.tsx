@@ -10,6 +10,7 @@ import {
 
 import { useInView } from "@/components/ui/warp-gradient-utils/use-in-view";
 import { cn } from "@/lib/utils";
+import { isLiteMotion } from "@/lib/motion-lite";
 
 function mergeRefs<T>(...refs: (Ref<T> | undefined)[]) {
   return (node: T | null) => {
@@ -372,7 +373,8 @@ function WarpGradient({
     };
 
     const resize = () => {
-      ratio = Math.min(window.devicePixelRatio || 1, 2);
+      // a soft gradient doesn't need retina pixels; on a phone that's 4x less shader work per frame
+      ratio = Math.min(window.devicePixelRatio || 1, isLiteMotion() ? 1 : 2);
       element.width = Math.max(1, Math.round(element.clientWidth * ratio));
       element.height = Math.max(1, Math.round(element.clientHeight * ratio));
       gl.viewport(0, 0, element.width, element.height);

@@ -41,8 +41,9 @@
   & .blob { mix-blend-mode:multiply; opacity:.22; }
   & .dot-grid { background-image:radial-gradient(rgba(58,40,170,.12) 1px, transparent 1.4px); }
   & .vignette { display:none; }
-  /* the white starfield, turned into soft violet points */
-  & .particles { filter:invert(1) hue-rotate(180deg) saturate(1.4); opacity:.5; }
+  /* the white starfield, turned into soft violet points: Particles.tsx draws it in these colors
+     (a CSS filter here re-ran over the whole screen on every frame) */
+  & .particles { opacity:.5; }
   & .grain { opacity:.025; mix-blend-mode:multiply; }
   & .cursor.is-hover { background:rgba(119,82,254,.08); }
 
@@ -107,6 +108,13 @@
   & .work .flagship, & .work .wcard, & .work .app-tile { box-shadow:0 30px 70px -44px rgba(58,40,170,.5), inset 0 1px 0 rgba(255,255,255,.8); }
   & .work .flagship { background:radial-gradient(70% 90% at 88% 45%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 65%),linear-gradient(160deg,rgba(255,255,255,.72),rgba(255,255,255,.5)); }
   & .work .wcard, & .work .app-tile { background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.6)); border-color:rgba(58,40,170,.14); }
+  /* touch devices: the lighter ambient and the work cards without live glass (see globals.css) */
+  @media (pointer:coarse){
+    & .glow--top { background:radial-gradient(closest-side, rgba(119,82,254,.16), transparent); }
+    & .glow--br { background:radial-gradient(closest-side, rgba(142,143,250,.14), transparent); }
+    & .work .flagship { background:radial-gradient(70% 90% at 88% 45%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 65%),linear-gradient(160deg,rgba(255,255,255,.8),rgba(255,255,255,.64)); }
+    & .work .wcard, & .work .app-tile { background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.72)); }
+  }
   & :is(.wcard, .app-tile) { background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.65)); box-shadow:var(--card-shadow); }
   & .flagship::before { background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 60%,transparent),rgba(58,40,170,.12) 35%,rgba(58,40,170,.08) 65%,rgba(77,107,255,.3)); }
   & .flagship__facts div { background:rgba(255,255,255,.65); }
@@ -124,7 +132,7 @@
   /* ---------- needs ---------- */
   & .needs__link::before { background:linear-gradient(90deg, rgba(119,82,254,.1), rgba(142,143,250,.03) 70%, transparent); }
   & .needs__a b { color:var(--violet); }
-  & .needs__link:hover .needs__arrow { color:#fff; }
+  @media (hover:hover){ & .needs__link:hover .needs__arrow { color:#fff; } }
   & .needs__foot { background:linear-gradient(120deg, rgba(119,82,254,.08), rgba(255,255,255,.7)); box-shadow:var(--card-shadow); }
 
   /* ---------- process stack ---------- */

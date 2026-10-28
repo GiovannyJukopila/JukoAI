@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
 import type { Locale } from '@/lib/i18n'
+import { isLiteMotion } from '@/lib/motion-lite'
 
 /**
  * App Builder — the hero illustration of juko.ai.
@@ -79,10 +80,12 @@ function initBuilderScene(root: HTMLElement, copy: Copy, fontFamily: string): ()
   try {
     const TAU = Math.PI * 2
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+    const lite = isLiteMotion()
     const width0 = root.clientWidth || 1
+    const narrow = width0 < 900
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
     renderer.setClearColor(0x000000, 0)
-    renderer.setPixelRatio(Math.min(devicePixelRatio, width0 < 900 ? 1.6 : 1.75))
+    renderer.setPixelRatio(Math.min(devicePixelRatio, lite ? 1.5 : narrow ? 1.6 : 1.75))
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFShadowMap
@@ -94,7 +97,9 @@ function initBuilderScene(root: HTMLElement, copy: Copy, fontFamily: string): ()
     const sun = new THREE.DirectionalLight(0xffffff, 2.4)
     sun.position.set(9, 16, 7)
     sun.castShadow = true
-    sun.shadow.mapSize.set(2048, 2048)
+    // on a phone the scene is ~400 px wide: a 1024 map gives the same soft shadows for a quarter of the work
+    const shadowSize = narrow ? 1024 : 2048
+    sun.shadow.mapSize.set(shadowSize, shadowSize)
     Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 50 })
     sun.shadow.bias = -0.0004
     sun.shadow.radius = 3
@@ -807,12 +812,36 @@ function initBuilderScene(root: HTMLElement, copy: Copy, fontFamily: string): ()
       last = performance.now(),
       raf = 0,
       ready = false
+    // Touch devices watch their own frame rate once: a phone that can't hold ~40 fps renders at
+    // 1x pixels, smaller shadows and 30 fps rather than stutter while the page scrolls.
+    let minStep = 0,
+      sampled = -30, // the first frames compile shaders and upload geometry: skip them
+      sampledTime = 0
+    function watchQuality(dt: number) {
+      if (!lite || sampled === Infinity) return
+      if (++sampled <= 0) return
+      sampledTime += dt
+      if (sampled < 90) return
+      if (sampledTime / sampled > 1 / 40) {
+        renderer.setPixelRatio(1)
+        sun.shadow.mapSize.set(512, 512)
+        sun.shadow.map?.dispose()
+        sun.shadow.map = null
+        minStep = 1000 / 30 - 2
+      }
+      sampled = Infinity
+    }
     const ease = (x: number) => 0.5 - Math.cos(x * Math.PI) / 2
     function frame(now: number) {
       raf = requestAnimationFrame(frame)
+      if (!visible && ready) {
+        last = now
+        return
+      }
+      if (minStep && now - last < minStep) return
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
-      if (!visible && ready) return
+      if (ready) watchQuality(dt)
       if (!reduceMotion) t += dt
       tilt.x += (tilt.tx - tilt.x) * Math.min(1, dt * 3)
       tilt.y += (tilt.ty - tilt.y) * Math.min(1, dt * 3)

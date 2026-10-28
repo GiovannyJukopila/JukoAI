@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { getDict, type Locale } from "@/lib/i18n";
+import { useLiteMotion } from "@/lib/motion-lite";
 
 /*
  * "How we make it real", the 2D take: the same pinned five-step walk as the Manifesto, but the right
@@ -668,6 +669,8 @@ function Seg({ tour, i }: { tour: P; i: number }) {
 function Console({ step, tour, c, title, locale }: { step: number; tour: P; c: HoloCopy; title: string; locale: Locale }) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
+  // a blur over the whole console is a heavy frame on a phone; there the scenes only fade
+  const soft = !useLiteMotion();
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -697,9 +700,9 @@ function Console({ step, tour, c, title, locale }: { step: number; tour: P; c: H
               <motion.div
                 key={step}
                 className="holo__scene"
-                initial={{ opacity: 0, scale: 0.97, filter: "blur(10px)" }}
-                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 1.02, filter: "blur(10px)" }}
+                initial={{ opacity: 0, scale: 0.97, ...(soft && { filter: "blur(10px)" }) }}
+                animate={{ opacity: 1, scale: 1, ...(soft && { filter: "blur(0px)" }) }}
+                exit={{ opacity: 0, scale: 1.02, ...(soft && { filter: "blur(10px)" }) }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Scene step={step} tour={tour} c={c} locale={locale} />

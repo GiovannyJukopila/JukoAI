@@ -55,7 +55,8 @@ export function AIFlow({ locale }: { locale: Locale }) {
 
       {/* AI core (pulsing) */}
       {!reduce && (
-        <motion.circle cx={ai.x} cy={ai.y} r={18} fill="none" stroke="#8E8FFA"
+        // the radius starts in `initial`: as a plain prop next to an animated r, framer-motion wrote r="undefined"
+        <motion.circle cx={ai.x} cy={ai.y} fill="none" stroke="#8E8FFA" initial={{ r: 18, opacity: 0.5 }}
           animate={{ r: [18, 26], opacity: [0.5, 0] }} transition={{ duration: 2, ease: "easeOut", repeat: Infinity }} />
       )}
       <circle cx={ai.x} cy={ai.y} r={18} fill="url(#aiCore)" />
