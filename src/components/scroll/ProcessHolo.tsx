@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { getDict, type Locale } from "@/lib/i18n";
 import { useLiteMotion } from "@/lib/motion-lite";
+import { Orb } from "../Orb";
 
 /*
  * "How we make it real", the 2D take: the same pinned five-step walk as the Manifesto, but the right
@@ -276,31 +277,6 @@ type SceneProps = { p: P; c: HoloCopy; locale: Locale };
 const IDEA_CORE = [500, 140] as const;
 const IDEA_NODES: Array<[number, number]> = [[372, 58], [628, 58], [350, 272], [650, 272]];
 const GANTT: Array<[number, number]> = [[0, 30], [24, 46], [56, 26], [80, 20]];
-
-// An AI orb: a liquid core that swirls and breathes, a scanning ring and a few particles on tilted
-// orbits, with its name in the middle. Step 01 thinks the idea over; step 04 is the AI itself.
-function Orb({ variant, children }: { variant?: "ai"; children: ReactNode }) {
-  return (
-    <div className={`hl-orb${variant ? ` hl-orb--${variant}` : ""}`}>
-      <i className="hl-orb__halo" />
-      <svg className="hl-orb__rings" viewBox="0 0 200 200">
-        <circle cx="100" cy="100" r="96" className="hl-orb__ticks" />
-        <circle cx="100" cy="100" r="84" className="hl-orb__track" />
-        <circle cx="100" cy="100" r="84" className="hl-orb__scan" />
-      </svg>
-      <div className="hl-orb__body">
-        <i className="hl-orb__swirl" />
-        <i className="hl-orb__swirl hl-orb__swirl--2" />
-        <i className="hl-orb__light" />
-        <i className="hl-orb__gloss" />
-      </div>
-      {[0, 1, 2].map((k) => (
-        <span key={k} className={`hl-orb__orbit hl-orb__orbit--${k}`}><span><i /></span></span>
-      ))}
-      <div className="hl-orb__center">{children}</div>
-    </div>
-  );
-}
 
 // the idea in the orb, and below it how far the analysis has gone (scrubbed)
 function IdeaOrb({ p, t, locale }: { p: P; t: HoloCopy["idea"]; locale: Locale }) {

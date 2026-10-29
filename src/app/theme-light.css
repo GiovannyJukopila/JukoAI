@@ -17,7 +17,7 @@
 }
 
 /* dark islands: restore the dark tokens inside the product screens */
-:root[data-theme="light"] :is(.holo__board, .eng-card, .ui-card, .browser, .store-badge, .flagship__chip, .wcard__cat, .browser-frame) {
+:root[data-theme="light"] :is(.holo__board, .eng-card, .ui-card, .browser, .store-badge, .flagship__chip, .wcard__cat, .browser-frame, .svc-index) {
   --bg:#050410; --bg-2:#0b0918;
   --surface:rgba(255,255,255,.025); --surface-2:rgba(255,255,255,.045);
   --border:rgba(142,143,250,.14); --border-2:rgba(142,143,250,.28);

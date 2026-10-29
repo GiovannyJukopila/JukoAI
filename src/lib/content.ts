@@ -35,6 +35,8 @@ export interface Service {
   slug: string;
   icon: ServiceIcon;
   size?: "lg" | "wide";
+  /** the quote quiz's need option this service starts ticked (index into contact.form.needOptions) */
+  need: number;
   title: L;
   short: L;
   lead: L;
@@ -46,6 +48,7 @@ export interface Service {
 export const SERVICES: Service[] = [
   {
     slug: "automatizacion-ia",
+    need: 2,
     icon: "ai",
     size: "lg",
     title: { es: "Automatización & Agentes con IA", en: "AI Automation & Agents" },
@@ -69,6 +72,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "desarrollo-web",
+    need: 1,
     icon: "web",
     title: { es: "Desarrollo Web", en: "Web Development" },
     short: { es: "Plataformas SaaS, dashboards y sitios corporativos rápidos, accesibles y a medida.", en: "Fast, accessible and bespoke SaaS platforms, dashboards and corporate sites." },
@@ -85,6 +89,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "apps-moviles",
+    need: 0,
     icon: "mobile",
     title: { es: "Apps Móviles", en: "Mobile Apps" },
     short: { es: "Apps nativas multiplataforma con Flutter, publicadas en App Store y Google Play.", en: "Cross-platform native apps with Flutter, published on the App Store and Google Play." },
@@ -101,6 +106,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "cloud-devops",
+    need: 3,
     icon: "cloud",
     title: { es: "Cloud & DevOps", en: "Cloud & DevOps" },
     short: { es: "Infraestructura escalable, CI/CD y despliegues seguros en AWS y Firebase.", en: "Scalable infrastructure, CI/CD and secure deployments on AWS and Firebase." },
@@ -117,6 +123,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "integraciones-apis",
+    need: 3,
     icon: "integration",
     title: { es: "Integraciones & APIs", en: "Integrations & APIs" },
     short: {
@@ -136,6 +143,7 @@ export const SERVICES: Service[] = [
   },
   {
     slug: "seo-aeo-geo",
+    need: 5,
     icon: "search",
     size: "wide",
     title: { es: "SEO, AEO y GEO", en: "SEO, AEO & GEO" },

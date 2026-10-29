@@ -8,17 +8,19 @@ interface RevealProps {
   delay?: number;
   y?: number;
   className?: string;
+  id?: string;
   style?: CSSProperties;
   as?: "div" | "section" | "article" | "li" | "span";
 }
 
-export function Reveal({ children, delay = 0, y = 28, className, style, as = "div" }: RevealProps) {
+export function Reveal({ children, delay = 0, y = 28, className, id, style, as = "div" }: RevealProps) {
   const reduce = useReducedMotion();
   const MotionTag = motion[as];
 
   return (
     <MotionTag
       className={className}
+      id={id}
       style={style}
       initial={reduce ? false : { opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
