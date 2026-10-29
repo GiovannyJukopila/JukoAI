@@ -79,7 +79,7 @@
   & .howto__card { background:rgba(255,255,255,.88); box-shadow:var(--card-shadow); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
 
   /* ---------- shared cards ---------- */
-  & :is(.bento__card, .index-card, .step, .kpi, .detail-card, .feature, .case-meta div, .case-highlights li) { background:var(--surface); box-shadow:var(--card-shadow); }
+  & :is(.bento__card, .index-card, .step, .detail-card, .feature, .case-meta div, .case-highlights li) { background:var(--surface); box-shadow:var(--card-shadow); }
   & .bento__icon { background:linear-gradient(150deg, rgba(119,82,254,.12), rgba(255,255,255,.9)); }
   & .step__num { background:linear-gradient(155deg,#5a45e6,#8E8FFA 60%,#3b4cc9); -webkit-background-clip:text; background-clip:text; filter:none; }
   & .pill { background:rgba(255,255,255,.7); }
@@ -130,9 +130,6 @@
   & .filter.is-active { color:#fff; box-shadow:0 10px 24px -12px rgba(91,60,230,.7); }
 
   /* ---------- needs ---------- */
-  & .needs__link::before { background:linear-gradient(90deg, rgba(119,82,254,.1), rgba(142,143,250,.03) 70%, transparent); }
-  & .needs__a b { color:var(--violet); }
-  @media (hover:hover){ & .needs__link:hover .needs__arrow { color:#fff; } }
   & .needs__foot { background:linear-gradient(120deg, rgba(119,82,254,.08), rgba(255,255,255,.7)); box-shadow:var(--card-shadow); }
 
   /* ---------- process stack ---------- */
@@ -142,6 +139,7 @@
   & .pstack__slot:nth-child(2) .pstack__card::before { background:radial-gradient(closest-side, rgba(142,143,250,.16), transparent); }
   & .pstack__slot:nth-child(3) .pstack__card::before { background:radial-gradient(closest-side, rgba(16,185,129,.1), transparent); }
   & .pstack__slot:nth-child(4) .pstack__card::before { background:radial-gradient(closest-side, rgba(77,107,255,.12), transparent); }
+  & .pstack__slot:nth-child(5) .pstack__card::before { background:radial-gradient(closest-side, rgba(16,185,170,.1), transparent); }
   & .pstack__num { background:linear-gradient(180deg, rgba(90,69,230,.85), rgba(119,82,254,.12)); -webkit-background-clip:text; background-clip:text; }
   & .pstack__body li { background:rgba(255,255,255,.8); }
   & .pstack__shade { background:#ecebf8; }

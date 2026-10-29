@@ -83,9 +83,10 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (!open) return;
     window.__lenis?.stop();
-    const root = document.documentElement;
-    const prev = root.style.overflow;
-    root.style.overflow = "hidden";
+    // lock on <body>: an overflow on <html> would turn <body> into the scroller and unpin the sticky sections behind
+    const body = document.body;
+    const prev = body.style.overflow;
+    body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && phase !== "sending") close();
       if (e.key !== "Tab" || !panel.current) return;
@@ -98,7 +99,7 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      root.style.overflow = prev;
+      body.style.overflow = prev;
       window.__lenis?.start();
       lastFocus.current?.focus?.();
     };

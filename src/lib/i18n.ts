@@ -8,7 +8,7 @@ export function isLocale(value: string): value is Locale {
 
 export const dictionaries = {
   es: {
-    nav: { services: "Servicios", work: "Proyectos", process: "Proceso", about: "Estudio", cta: "Cotizar proyecto" },
+    nav: { services: "Servicios", work: "Proyectos", needs: "Soluciones", faq: "FAQ", cta: "Cotizar proyecto" },
     theme: { label: "Tema", system: "Sistema", light: "Claro", dark: "Oscuro" },
     hero: {
       badge: "Ingeniería de software · Innovación · IA",
@@ -84,29 +84,7 @@ export const dictionaries = {
         { q: "Tengo una idea, pero no sé por dónde empezar", a: "Asesoría y estrategia", d: "Analizamos tu idea contigo, definimos el alcance y te proponemos el mejor camino." },
       ],
       foot: "¿No sabes qué necesitas? Cuéntanos qué quieres resolver y te orientamos.",
-      cta: "Cuéntanos tu idea",
-    },
-    process: {
-      eyebrow: "Cómo trabajamos", title: "De la idea al producto",
-      sub: "Un proceso claro, rápido y potenciado por IA, sin sacrificar la calidad de ingeniería.",
-      steps: [
-        { t: "Descubrimiento y asesoría", d: "Analizamos tu idea y tu negocio contigo. Definimos alcance, prioridades, presupuesto y la arquitectura correcta antes de escribir una línea de código.", k: ["Sesión de análisis contigo", "Alcance y presupuesto claros", "Arquitectura técnica"] },
-        { t: "Diseño y prototipo", d: "Diseñamos una experiencia premium y un prototipo navegable para que veas y pruebes tu producto antes de construirlo.", k: ["UX/UI a medida", "Prototipo navegable", "Validación contigo"] },
-        { t: "Ingeniería con IA", d: "Construimos con flujos asistidos por IA: entregas rápidas sin renunciar a la calidad, la seguridad ni el rendimiento.", k: ["Código limpio y testeado", "Seguridad por defecto", "Avances cada semana"] },
-        { t: "Lanzamiento y crecimiento", d: "Publicamos tu web y tus apps, medimos resultados y seguimos mejorando el producto contigo a largo plazo.", k: ["App Store, Google Play y web", "Analítica y mejoras", "Soporte continuo"] },
-      ],
-    },
-    about: {
-      eyebrow: "El estudio", title: "Ingeniería de clase mundial",
-      p1: "Juko AI es un estudio global de desarrollo de software e inteligencia artificial. Como equipo, diseñamos, construimos y mantenemos productos web y móviles escalables, de extremo a extremo, combinando fundamentos sólidos de ingeniería con flujos de trabajo asistidos por IA.",
-      p2: "Somos agnósticos a la tecnología y aprendemos rápido: nos adaptamos a tu stack y entregamos con rapidez, seguridad y calidad. Trabajamos con clientes en distintos países, varios de ellos en Europa, con un compromiso total con un producto de alto nivel y escalable.",
-      cta: "Trabaja con nosotros",
-      kpis: [
-        { v: "+5", l: "años de experiencia" },
-        { v: "100%", l: "enfoque a medida" },
-        { v: "Global", l: "clientes en varios países" },
-        { v: "Web · Móvil · IA", l: "capacidades full-stack" },
-      ],
+      cta: "Cuéntanos tu idea", pick: "Cotizar esto",
     },
     seo: {
       homeTitle: "Juko AI · Desarrollo de software, apps e IA a medida",
@@ -209,7 +187,7 @@ export const dictionaries = {
     notFound: { title: "Página no encontrada", back: "Volver al inicio" },
   },
   en: {
-    nav: { services: "Services", work: "Work", process: "Process", about: "Studio", cta: "Get a quote" },
+    nav: { services: "Services", work: "Work", needs: "Solutions", faq: "FAQ", cta: "Get a quote" },
     theme: { label: "Theme", system: "System", light: "Light", dark: "Dark" },
     hero: {
       badge: "Software engineering · Innovation · AI",
@@ -285,29 +263,7 @@ export const dictionaries = {
         { q: "I have an idea, but don't know where to start", a: "Advice & strategy", d: "We analyse your idea with you, define the scope and propose the best way forward." },
       ],
       foot: "Not sure what you need? Tell us what you want to solve and we'll guide you.",
-      cta: "Tell us your idea",
-    },
-    process: {
-      eyebrow: "How we work", title: "From idea to product",
-      sub: "A clear, fast, AI-powered process, without compromising engineering quality.",
-      steps: [
-        { t: "Discovery & advice", d: "We analyse your idea and your business with you. We define scope, priorities, budget and the right architecture before writing a single line of code.", k: ["A working session with you", "Clear scope and budget", "Technical architecture"] },
-        { t: "Design & prototype", d: "We design a premium experience and a clickable prototype, so you can see and try your product before it is built.", k: ["Bespoke UX/UI", "Clickable prototype", "Validated with you"] },
-        { t: "AI-assisted engineering", d: "We build with AI-assisted workflows: fast delivery without trading off quality, security or performance.", k: ["Clean, tested code", "Secure by default", "Progress every week"] },
-        { t: "Launch & growth", d: "We ship your website and apps, measure results and keep improving the product with you for the long run.", k: ["App Store, Google Play and web", "Analytics and iteration", "Ongoing support"] },
-      ],
-    },
-    about: {
-      eyebrow: "The studio", title: "World-class engineering",
-      p1: "Juko AI is a global software development and artificial intelligence studio. As a team, we design, build and maintain scalable web and mobile products, end to end, pairing strong engineering fundamentals with AI-assisted workflows.",
-      p2: "We are technology-agnostic and learn fast: we adapt to your stack and deliver with speed, security and quality. We work with clients across several countries, including Europe, fully committed to a high-end, scalable product.",
-      cta: "Work with us",
-      kpis: [
-        { v: "+5", l: "years of experience" },
-        { v: "100%", l: "bespoke focus" },
-        { v: "Global", l: "clients in several countries" },
-        { v: "Web · Mobile · AI", l: "full-stack capabilities" },
-      ],
+      cta: "Tell us your idea", pick: "Quote this",
     },
     seo: {
       homeTitle: "Juko AI · Custom software, apps and AI",

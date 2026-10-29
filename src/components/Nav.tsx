@@ -33,8 +33,8 @@ export function Nav({ locale }: { locale: Locale }) {
   const links = [
     { href: `/${locale}/servicios`, label: dict.nav.services },
     { href: `/${locale}/proyectos`, label: dict.nav.work },
-    { href: `${home}#process`, label: dict.nav.process },
-    { href: `${home}#about`, label: dict.nav.about },
+    { href: `${home}#needs`, label: dict.nav.needs },
+    { href: `${home}#faq`, label: dict.nav.faq },
   ];
 
   const isActive = (href: string) => {

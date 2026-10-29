@@ -15,7 +15,6 @@ import { Manifesto } from "@/components/scroll/Manifesto";
 import { ProcessHolo } from "@/components/scroll/ProcessHolo";
 import { WorkBackdrop } from "@/components/work/WorkBackdrop";
 import { Needs } from "@/components/scroll/Needs";
-import { ProcessStack } from "@/components/scroll/ProcessStack";
 import { RevealTitle } from "@/components/scroll/RevealTitle";
 import { ScrollScale } from "@/components/scroll/ScrollScale";
 import { notFound } from "next/navigation";
@@ -65,8 +64,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
-      <Needs locale={lc} />
-
       {/* SERVICES */}
       <section className="section" id="services">
         <Reveal className="section__head">
@@ -107,36 +104,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </Reveal>
       </section>
 
-      {/* PROCESS */}
-      <section className="section" id="process">
-        <Reveal className="section__head">
-          <span className="eyebrow">{dict.process.eyebrow}</span>
-          <RevealTitle className="section__title" text={dict.process.title} />
-          <p className="section__sub">{dict.process.sub}</p>
-        </Reveal>
-        <ProcessStack locale={lc} />
-      </section>
-
-      {/* ABOUT */}
-      <section className="section" id="about">
-        <div className="about__grid">
-          <Reveal className="about__text">
-            <span className="eyebrow">{dict.about.eyebrow}</span>
-            <RevealTitle className="section__title" text={dict.about.title} />
-            <p>{dict.about.p1}</p>
-            <p>{dict.about.p2}</p>
-            <Link href={`${home}#contact`} className="btn btn--lg">{dict.about.cta}</Link>
-          </Reveal>
-          <Reveal className="about__stats" delay={0.1}>
-            {dict.about.kpis.map((k, i) => (
-              <div className="kpi" key={i}>
-                <b>{k.v}</b>
-                <span>{k.l}</span>
-              </div>
-            ))}
-          </Reveal>
-        </div>
-      </section>
+      {/* NEEDS: start from the problem, as a stacking deck; each card opens the quote */}
+      <Needs locale={lc} />
 
       {/* FAQ: answers in the page and as FAQPage data for answer engines */}
       <Faq locale={lc} />
