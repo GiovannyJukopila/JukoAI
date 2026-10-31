@@ -9,6 +9,7 @@ import { openQuote } from "@/lib/quote";
 import { ArrowUpRight, BoltIcon, Check, ServiceGlyph } from "./icons";
 import { LogoLoader } from "./LogoLoader";
 import { WhatsAppLink } from "./WhatsAppLink";
+import { ConsentCheck } from "./ConsentCheck";
 
 const initial: ContactState = { status: "idle" };
 const NEED_ICONS: ServiceIcon[] = ["mobile", "web", "ai", "integration", "design", "search"];
@@ -48,8 +49,9 @@ export function ContactForm({ locale }: { locale: Locale }) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
+  const [consent, setConsent] = useState(false);
 
-  const done = [needs.length > 0, message.trim().length >= 5, name.trim().length > 0, emailRe.test(email.trim())];
+  const done = [needs.length > 0, message.trim().length >= 5, name.trim().length > 0, emailRe.test(email.trim()), consent];
   const pct = Math.round((done.filter(Boolean).length / done.length) * 100);
   const ready = pct === 100;
 
@@ -170,6 +172,8 @@ export function ContactForm({ locale }: { locale: Locale }) {
         </div>
       </fieldset>
 
+      <ConsentCheck id="cf-consent" locale={locale} checked={consent} onChange={setConsent} error={!!err?.consent && !consent} />
+
       {state.status === "error" && state.errorKey && (
         <p className="form-error" role="alert">{f[state.errorKey]}</p>
       )}
@@ -177,7 +181,6 @@ export function ContactForm({ locale }: { locale: Locale }) {
       <div className="form-actions">
         <SubmitButton label={f.send} sending={f.sending} ready={ready} />
         <p className="qform__promise"><span className="qform__dot" aria-hidden="true" />{dict.quote.promise}</p>
-        <p className="form-privacy">{f.privacy}</p>
       </div>
     </form>
   );

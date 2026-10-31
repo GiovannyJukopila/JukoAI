@@ -11,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...SERVICES.map((s) => ({ path: `/servicios/${s.slug}`, priority: 0.8 })),
     { path: "/proyectos", priority: 0.8 },
     ...PROJECTS.map((p) => ({ path: `/proyectos/${p.slug}`, priority: 0.7 })),
+    { path: "/privacidad", priority: 0.3 },
+    { path: "/terminos", priority: 0.3 },
   ];
   const now = new Date();
   return paths.flatMap(({ path, priority }) =>

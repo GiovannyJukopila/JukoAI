@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { getDict, type Locale } from "@/lib/i18n";
 import { onQuoteOpen } from "@/lib/quote";
 import { sendContact } from "@/lib/actions";
+import { ConsentCheck } from "./ConsentCheck";
 import { type ServiceIcon } from "@/lib/content";
 import { ArrowLeft, ArrowUpRight, BoltIcon, Check, ServiceGlyph } from "./icons";
 import { LogoLoader } from "./LogoLoader";
@@ -50,6 +51,7 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [consent, setConsent] = useState(false);
   const [touched, setTouched] = useState(false);
   const [phase, setPhase] = useState<"ask" | "sending" | "sent" | "failed">("ask");
   const [replyBy, setReplyBy] = useState<number | null>(null);
@@ -66,7 +68,7 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
         // a fresh quiz after a sent request; otherwise pick up where the visitor left it
         setPhase((ph) => {
           if (ph === "sent") {
-            setNeeds([]); setStage(""); setTimeline(""); setName(""); setEmail(""); setPhone("");
+            setNeeds([]); setStage(""); setTimeline(""); setName(""); setEmail(""); setPhone(""); setConsent(false);
           }
           return "ask";
         });
@@ -125,17 +127,18 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
   const validName = name.trim().length > 0;
   const validEmail = emailRe.test(email.trim());
   const validPhone = !phone.trim() || phoneRe.test(phone.trim());
-  const canNext = [needs.length > 0, !!stage, !!timeline, validName && validEmail && validPhone][step];
+  const canNext = [needs.length > 0, !!stage, !!timeline, validName && validEmail && validPhone && consent][step];
 
   const finish = async () => {
     setTouched(true);
-    if (!validName || !validEmail || !validPhone) return;
+    if (!validName || !validEmail || !validPhone || !consent) return;
     const fd = new FormData();
     fd.set("locale", locale);
     fd.set("name", name.trim());
     fd.set("email", email.trim());
     fd.set("phone", phone.trim());
     fd.set("timeline", timeline);
+    fd.set("consent", "yes");
     needs.forEach((n) => fd.append("needs", n));
     fd.set("message", [`${q.msgWant}: ${needs.join(", ")}.`, `${q.msgStage}: ${stage}.`, `${q.msgTimeline}: ${timeline}.`].join("\n"));
     setPhase("sending");
@@ -221,6 +224,7 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
             <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={f.phonePh} type="tel" inputMode="tel" autoComplete="tel" aria-invalid={touched && !validPhone} />
             {touched && !validPhone ? <em role="alert">{f.errPhone}</em> : <small>{f.phoneHint}</small>}
           </label>
+          <ConsentCheck id="quiz-consent" locale={locale} checked={consent} onChange={setConsent} error={touched && !consent} />
           {phase === "failed" && <p className="quiz__fail" role="alert">{f[failKey]}</p>}
           <button type="submit" hidden />
         </form>

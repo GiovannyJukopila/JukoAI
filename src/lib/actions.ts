@@ -2,13 +2,14 @@
 
 import nodemailer from "nodemailer";
 import { headers } from "next/headers";
+import { LEGAL } from "./legal";
 
 export type ContactState = {
   status: "idle" | "success" | "error";
   /** when the reply is promised by (epoch ms): 24 h after the request arrived */
   replyBy?: number;
   errorKey?: "errSend" | "errRate";
-  fieldErrors?: Partial<Record<"name" | "email" | "message" | "phone", "errName" | "errEmail" | "errMessage" | "errPhone">>;
+  fieldErrors?: Partial<Record<"name" | "email" | "message" | "phone" | "consent", "errName" | "errEmail" | "errMessage" | "errPhone" | "errConsent">>;
   values?: { name: string; email: string; company: string; message: string; needs: string[]; timeline: string; phone: string };
 };
 
@@ -73,6 +74,8 @@ export async function sendContact(_prev: ContactState, formData: FormData): Prom
   if (!emailRe.test(email)) fieldErrors.email = "errEmail";
   if (message.length < 5) fieldErrors.message = "errMessage";
   if (phone && !phoneRe.test(phone)) fieldErrors.phone = "errPhone";
+  // Ley 1581: no request goes out without the visitor's prior, explicit authorisation
+  if (formData.get("consent") !== "yes") fieldErrors.consent = "errConsent";
   if (Object.keys(fieldErrors).length > 0) {
     return { status: "error", fieldErrors, values };
   }
@@ -87,6 +90,10 @@ export async function sendContact(_prev: ContactState, formData: FormData): Prom
     return { status: "error", errorKey: "errSend", values };
   }
 
+  // proof of the authorisation, kept with the request itself: when it was given and which policy version
+  const consentAt = new Date();
+  const consentLine = `Sí, ${consentAt.toLocaleString("es-CO", { timeZone: "America/Bogota", dateStyle: "long", timeStyle: "medium" })} (hora de Colombia · ${consentAt.toISOString()}) · Política de Tratamiento de Datos v${LEGAL.version}`;
+
   try {
     const subject = `Nuevo contacto · ${name}${company ? ` (${company})` : ""}${needs.length ? ` · ${needs.join(", ")}` : ""}`;
     const html = `
@@ -99,6 +106,7 @@ export async function sendContact(_prev: ContactState, formData: FormData): Prom
         ${timeline ? `<p><strong>Plazo:</strong> ${esc(timeline)}</p>` : ""}
         ${phone ? `<p><strong>WhatsApp:</strong> <a href="https://wa.me/${phone.replace(/\D/g, "")}">${esc(phone)}</a></p>` : ""}
         <p><strong>Idioma:</strong> ${esc(locale)}</p>
+        <p><strong>Autorización de datos:</strong> ${esc(consentLine)}</p>
         <p><strong>Mensaje:</strong></p>
         <p style="white-space:pre-wrap;background:#f4f3fb;padding:14px 16px;border-radius:10px">${esc(message)}</p>
       </div>`;
@@ -110,7 +118,7 @@ export async function sendContact(_prev: ContactState, formData: FormData): Prom
       replyTo: email,
       subject,
       html,
-      text: `Nombre: ${name}\nEmail: ${email}\nEmpresa: ${company || "-"}\nNecesita: ${needs.join(", ") || "-"}\nPlazo: ${timeline || "-"}\nWhatsApp: ${phone || "-"}\nIdioma: ${locale}\n\n${message}`,
+      text: `Nombre: ${name}\nEmail: ${email}\nEmpresa: ${company || "-"}\nNecesita: ${needs.join(", ") || "-"}\nPlazo: ${timeline || "-"}\nWhatsApp: ${phone || "-"}\nIdioma: ${locale}\nAutorización de datos: ${consentLine}\n\n${message}`,
     });
 
     return { status: "success", replyBy: Date.now() + 24 * 3600 * 1000 };

@@ -5,6 +5,7 @@ import "../globals.css";
 import "../work-screens.css";
 import "../process-holo.css";
 import "../services.css";
+import "../legal.css";
 import "../theme-light.css";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
