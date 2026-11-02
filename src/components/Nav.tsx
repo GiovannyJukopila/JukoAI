@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "./icons";
@@ -37,6 +37,16 @@ export function Nav({ locale }: { locale: Locale }) {
     { href: `${home}#faq`, label: dict.nav.faq },
   ];
 
+  // on the home page the logo glides back up to the hero instead of re-opening the same page
+  const toTop = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (pathname !== home || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    setOpen(false);
+    if (window.location.hash) window.history.replaceState(null, "", home);
+    if (window.__lenis) window.__lenis.scrollTo(0, { duration: 1.6 });
+    else window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  };
+
   const isActive = (href: string) => {
     const clean = href.split("#")[0];
     if (clean === home) return false;
@@ -46,7 +56,7 @@ export function Nav({ locale }: { locale: Locale }) {
   return (
     <>
       <header className={`nav${scrolled ? " is-scrolled" : ""}`}>
-        <Link href={home} className="nav__logo" aria-label="Juko AI">
+        <Link href={home} className="nav__logo" aria-label="Juko AI" onClick={toTop}>
           <LogoMark priority />
           <span className="nav__logo-text">Juko<b>AI</b></span>
         </Link>
