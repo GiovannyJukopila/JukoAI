@@ -83,7 +83,7 @@ export function LegalPage({ kind, locale }: { kind: LegalKind; locale: Locale })
               <p>{lg.contactLead}</p>
             </div>
             <div className="legal-contact__actions">
-              <a className="btn" href={`mailto:${LEGAL.email}`}>{lg.contactEmail} <ArrowUpRight /></a>
+              <a className="btn" href={`mailto:${kind === "privacy" ? LEGAL.privacyEmail : LEGAL.email[locale]}`}>{lg.contactEmail} <ArrowUpRight /></a>
               <WhatsAppLink className="btn btn--ghost">WhatsApp</WhatsAppLink>
             </div>
           </aside>

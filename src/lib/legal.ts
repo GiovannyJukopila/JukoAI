@@ -12,10 +12,12 @@ export const LEGAL = {
   owners: ["Giovanny Zdenco Jukopila Rueda", "Yango Zdenco Jukopila Rueda"],
   city: "Cartagena de Indias",
   country: "Colombia",
-  email: "contacto@jukoai.com",
+  // general contact by language; requests about personal data have their own address
+  email: { es: "contacto@jukoai.com", en: "contact@jukoai.com" } as Record<Locale, string>,
+  privacyEmail: "privacidad@jukoai.com",
   phone: "+57 300 512 0188",
-  version: "1.0",
-  effective: "2026-10-30",
+  version: "1.1",
+  effective: "2026-11-02",
 };
 
 export type LegalBlock = string | { list: string[] } | { facts: [string, string][] };
@@ -26,7 +28,7 @@ export type LegalKind = "privacy" | "terms";
 export const LEGAL_PATH: Record<LegalKind, string> = { privacy: "/privacidad", terms: "/terminos" };
 
 const site = SITE_URL.replace(/^https?:\/\//, "");
-const { city, country, email, phone, version } = LEGAL;
+const { city, country, phone, version, privacyEmail } = LEGAL;
 
 // "A y B" / "A and B"
 const ownersText = (locale: Locale) => LEGAL.owners.join(locale === "en" ? " and " : " y ");
@@ -48,7 +50,7 @@ function privacyEs(): LegalDoc {
         { facts: [
           ["Corresponsables", `${ownersEs}, personas naturales que operan con el nombre comercial Juko AI`],
           ["Domicilio", `${city}, ${country}`],
-          ["Correo", email],
+          ["Correo", privacyEmail],
           ["Teléfono / WhatsApp", phone],
           ["Sitio web", site],
         ] },
@@ -96,7 +98,7 @@ function privacyEs(): LegalDoc {
         ] },
       ] },
       { id: "ejercer", title: "Cómo ejercer tus derechos", blocks: [
-        `Escríbenos a [${email}](mailto:${email}) con el asunto «Datos personales», tu nombre, el correo o teléfono con el que nos contactaste y lo que necesitas. Puede atenderlas cualquiera de los dos corresponsables, y te responde quien la reciba primero.`,
+        `Escríbenos a [${privacyEmail}](mailto:${privacyEmail}) con el asunto «Datos personales», tu nombre, el correo o teléfono con el que nos contactaste y lo que necesitas. Puede atenderlas cualquiera de los dos corresponsables, y te responde quien la reciba primero.`,
         { list: [
           "**Consultas:** te respondemos en un máximo de 10 días hábiles. Si no fuera posible, te explicamos el motivo y respondemos dentro de los 5 días hábiles siguientes.",
           "**Reclamos** (corregir, actualizar o borrar datos, o revocar la autorización): te respondemos en un máximo de 15 días hábiles. Si no fuera posible, te explicamos el motivo y respondemos dentro de los 8 días hábiles siguientes.",
@@ -138,7 +140,7 @@ function privacyEn(): LegalDoc {
         { facts: [
           ["Joint controllers", `${ownersEn}, natural persons trading as Juko AI`],
           ["Domicile", `${city}, ${country}`],
-          ["Email", email],
+          ["Email", privacyEmail],
           ["Phone / WhatsApp", phone],
           ["Website", site],
         ] },
@@ -186,7 +188,7 @@ function privacyEn(): LegalDoc {
         ] },
       ] },
       { id: "ejercer", title: "How to exercise your rights", blocks: [
-        `Write to [${email}](mailto:${email}) with the subject “Personal data”, your name, the email or phone you contacted us with and what you need. Either of the two joint controllers can handle them, and whoever receives yours first replies.`,
+        `Write to [${privacyEmail}](mailto:${privacyEmail}) with the subject “Personal data”, your name, the email or phone you contacted us with and what you need. Either of the two joint controllers can handle them, and whoever receives yours first replies.`,
         { list: [
           "**Queries:** we reply within 10 working days at most. If that is not possible, we tell you why and reply within the following 5 working days.",
           "**Claims** (correcting, updating or deleting data, or withdrawing your authorisation): we reply within 15 working days at most. If that is not possible, we tell you why and reply within the following 8 working days.",
@@ -226,7 +228,7 @@ function termsEs(locale: Locale): LegalDoc {
     lead: `Estas condiciones regulan el uso de ${site}. Al navegar el sitio las aceptas; si no estás de acuerdo, por favor no lo uses.`,
     sections: [
       { id: "quienes", title: "Quiénes somos", blocks: [
-        `Juko AI es el nombre comercial con el que ${ownersEs}, personas naturales con domicilio en ${city}, ${country}, presta servicios de desarrollo de software, automatización e inteligencia artificial. Puedes escribirnos a [${email}](mailto:${email}).`,
+        `Juko AI es el nombre comercial con el que ${ownersEs}, personas naturales con domicilio en ${city}, ${country}, presta servicios de desarrollo de software, automatización e inteligencia artificial. Puedes escribirnos a [${LEGAL.email.es}](mailto:${LEGAL.email.es}).`,
       ] },
       { id: "uso", title: "Uso del sitio", blocks: [
         "El contenido del sitio es informativo. Te comprometes a usarlo de forma lícita y, en particular, a no:",
@@ -274,7 +276,7 @@ function termsEn(locale: Locale): LegalDoc {
     lead: `These terms govern the use of ${site}. By browsing the site you accept them; if you do not agree, please do not use it.`,
     sections: [
       { id: "quienes", title: "Who we are", blocks: [
-        `Juko AI is the trade name under which ${ownersEn}, natural persons domiciled in ${city}, ${country}, provides software development, automation and artificial intelligence services. You can write to us at [${email}](mailto:${email}).`,
+        `Juko AI is the trade name under which ${ownersEn}, natural persons domiciled in ${city}, ${country}, provides software development, automation and artificial intelligence services. You can write to us at [${LEGAL.email.en}](mailto:${LEGAL.email.en}).`,
       ] },
       { id: "uso", title: "Use of the site", blocks: [
         "The content of the site is for information. You agree to use it lawfully and, in particular, not to:",

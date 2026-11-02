@@ -32,7 +32,7 @@ export function Footer({ locale }: { locale: Locale }) {
         <nav className="footer__legal-links" aria-label={dict.footer.legal}>
           <Link href={`/${locale}${LEGAL_PATH.privacy}`}>{dict.footer.privacy}</Link>
           <Link href={`/${locale}${LEGAL_PATH.terms}`}>{dict.footer.terms}</Link>
-          <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>
+          <a href={`mailto:${LEGAL.email[locale]}`}>{LEGAL.email[locale]}</a>
         </nav>
         <p className="footer__owner">{LEGAL.city}, {LEGAL.country}</p>
       </div>
