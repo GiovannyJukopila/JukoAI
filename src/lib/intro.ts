@@ -22,6 +22,14 @@ function subscribe(cb: () => void) {
   return () => window.removeEventListener(INTRO_DONE_EVENT, cb);
 }
 
+/** Runs cb once the first-visit intro is over (right away when there is none); played says if it ran. */
+export function afterIntro(cb: (played: boolean) => void) {
+  if (isDone()) { cb(false); return () => {}; }
+  const on = () => cb(true);
+  window.addEventListener(INTRO_DONE_EVENT, on, { once: true });
+  return () => window.removeEventListener(INTRO_DONE_EVENT, on);
+}
+
 /** Whether the page may play its entrance animations (the first-visit intro is over). */
 export function useIntroDone(): boolean {
   return useSyncExternalStore(subscribe, isDone, () => false);

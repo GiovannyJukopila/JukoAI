@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { getDict, type Locale } from "@/lib/i18n";
-import { onQuoteOpen } from "@/lib/quote";
+import { QUOTE_HASHES, onQuoteOpen, openQuote } from "@/lib/quote";
+import { afterIntro } from "@/lib/intro";
 import { sendContact } from "@/lib/actions";
 import { ConsentCheck } from "./ConsentCheck";
 import { type ServiceIcon } from "@/lib/content";
@@ -80,6 +81,31 @@ export function QuoteQuiz({ locale }: { locale: Locale }) {
       }),
     []
   );
+
+  // a link from outside (the email signature) lands with #cotizar or #quote: open the quiz once the
+  // first-visit intro has handed the scroll back, and drop the hash so closing it does not reopen it
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let stop = () => {};
+    const fromHash = () => {
+      if (!QUOTE_HASHES.includes(window.location.hash)) return;
+      stop();
+      clearTimeout(timer);
+      stop = afterIntro((played) => {
+        timer = setTimeout(() => {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+          openQuote();
+        }, played ? 1000 : 0);
+      });
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => {
+      window.removeEventListener("hashchange", fromHash);
+      stop();
+      clearTimeout(timer);
+    };
+  }, []);
 
   // while open: no page scroll, Escape closes, Tab stays inside the dialog
   useEffect(() => {

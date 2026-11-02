@@ -4,6 +4,9 @@
 // needs it should start with already ticked (the "What does your business need?" rows do that).
 const OPEN = "juko:quote-open";
 
+// links from outside the site (the email signatures) open the quiz with one of these hashes
+export const QUOTE_HASHES = ["#cotizar", "#quote"];
+
 export function openQuote(needs: string[] = []) {
   window.dispatchEvent(new CustomEvent<string[]>(OPEN, { detail: needs }));
 }
